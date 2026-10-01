@@ -42,7 +42,7 @@ export async function fetchGitHubReleases(): Promise<GitHubRelease[]> {
 
       const sizeInMb = apkAsset?.size
         ? `~${Math.round(apkAsset.size / (1024 * 1024))} MB`
-        : '~38 MB';
+        : '~68 MB';
 
       return {
         id: item.id,

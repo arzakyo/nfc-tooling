@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform, Alert, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { nfcService } from '../services/nfc/nfcService';
 import { ScannedCard } from '../services/nfc/nfcTypes';
@@ -52,11 +52,8 @@ export const ScanScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      {/* Web Download App Banner */}
-      <DownloadAppBanner />
-
       {currentCard ? (
-        <View style={{ flex: 1 }}>
+        <View style={styles.cardContainer}>
           <View style={styles.topActions}>
             <TouchableOpacity
               style={styles.rescanBtn}
@@ -72,53 +69,63 @@ export const ScanScreen: React.FC = () => {
           <CardInspectorView card={currentCard} />
         </View>
       ) : (
-        <View style={styles.idleContainer}>
-          <View style={[styles.radarCircle, scanning && styles.radarActive]}>
-            <Ionicons
-              name={scanning ? 'radio' : 'radio-outline'}
-              size={64}
-              color={scanning ? '#38BDF8' : '#64748B'}
-            />
-          </View>
+        <ScrollView
+          style={styles.scrollWrapper}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Web Download App Banner */}
+          <DownloadAppBanner />
 
-          <Text style={styles.headline}>
-            {scanning ? 'Hold Card Near NFC Antenna' : 'Ready to Inspect NFC Tag'}
-          </Text>
-
-          <Text style={styles.subheadline}>
-            {scanning
-              ? 'Hold your card firmly against the back of your phone...'
-              : 'Works with NTAG stickers, Mifare Classic, DESFire EV3, and e-Money smart cards.'}
-          </Text>
-
-          {errorMsg && (
-            <View style={styles.errorBox}>
-              <Ionicons name="alert-circle-outline" size={18} color="#F87171" />
-              <Text style={styles.errorText}>{errorMsg}</Text>
+          <View style={styles.idleContainer}>
+            <View style={[styles.radarCircle, scanning && styles.radarActive]}>
+              <Ionicons
+                name={scanning ? 'radio' : 'radio-outline'}
+                size={64}
+                color={scanning ? '#38BDF8' : '#64748B'}
+              />
             </View>
-          )}
 
-          {scanning ? (
-            <TouchableOpacity style={styles.cancelBtn} onPress={handleStopScan}>
-              <ActivityIndicator color="#F87171" style={{ marginRight: 8 }} />
-              <Text style={styles.cancelText}>Cancel Scanning</Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              style={[styles.scanBtn, isSupported === false && styles.disabledBtn]}
-              onPress={handleStartScan}
-            >
-              <Ionicons name="scan" size={20} color="#0F172A" />
-              <Text style={styles.scanBtnText}>Start NFC Scan</Text>
-            </TouchableOpacity>
-          )}
-
-          {isSupported === false && (
-            <Text style={styles.unsupportedText}>
-              NFC is not supported or not enabled on this device/browser.
+            <Text style={styles.headline}>
+              {scanning ? 'Hold Card Near NFC Antenna' : 'Ready to Inspect NFC Tag'}
             </Text>
-          )}
-        </View>
+
+            <Text style={styles.subheadline}>
+              {scanning
+                ? 'Hold your card firmly against the back of your phone...'
+                : 'Works with NTAG stickers, Mifare Classic, DESFire EV3, and e-Money smart cards.'}
+            </Text>
+
+            {errorMsg && (
+              <View style={styles.errorBox}>
+                <Ionicons name="alert-circle-outline" size={18} color="#F87171" />
+                <Text style={styles.errorText}>{errorMsg}</Text>
+              </View>
+            )}
+
+            {scanning ? (
+              <TouchableOpacity style={styles.cancelBtn} onPress={handleStopScan}>
+                <ActivityIndicator color="#F87171" style={{ marginRight: 8 }} />
+                <Text style={styles.cancelText}>Cancel Scanning</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={[styles.scanBtn, isSupported === false && styles.disabledBtn]}
+                onPress={handleStartScan}
+              >
+                <Ionicons name="scan" size={20} color="#0F172A" />
+                <Text style={styles.scanBtnText}>Start NFC Scan</Text>
+              </TouchableOpacity>
+            )}
+
+            {isSupported === false && (
+              <Text style={styles.unsupportedText}>
+                NFC is not supported or not enabled on this device/browser.
+              </Text>
+            )}
+          </View>
+        </ScrollView>
       )}
     </View>
   );
@@ -127,11 +134,25 @@ export const ScanScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 12,
     maxWidth: 860,
     width: '100%',
     alignSelf: 'center',
+  },
+  scrollWrapper: {
+    flex: 1,
+    width: '100%',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 40,
+  },
+  cardContainer: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    width: '100%',
   },
   topActions: {
     flexDirection: 'row',
@@ -157,6 +178,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
+    paddingVertical: 24,
+    minHeight: 380,
   },
   radarCircle: {
     width: 140,

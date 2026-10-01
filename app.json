@@ -22,8 +22,16 @@
       ],
       "package": "com.anonymous.nfctooling"
     },
+    "androidNavigationBar": {
+      "barStyle": "light-content",
+      "backgroundColor": "#0F172A"
+    },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "themeColor": "#0F172A",
+      "backgroundColor": "#020617",
+      "display": "standalone",
+      "orientation": "portrait"
     },
     "plugins": [
       [

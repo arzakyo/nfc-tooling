@@ -25,7 +25,7 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#020617" />
+      <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
       
       <View style={styles.appShell}>
         {/* Top Navigation Bar */}
@@ -65,7 +65,8 @@ export default function App() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#020617',
+    backgroundColor: '#0F172A',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   appShell: {
     flex: 1,

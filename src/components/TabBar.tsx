@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export type TabId = 'scan' | 'pocketbook' | 'faq' | 'history';
@@ -49,7 +49,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#0F172A',
     borderTopWidth: 1,
     borderTopColor: '#1E293B',
-    paddingVertical: 12,
+    paddingTop: 10,
+    paddingBottom: Platform.OS === 'ios' ? 24 : Platform.OS === 'android' ? 14 : 12,
     paddingHorizontal: 8,
     justifyContent: 'space-around',
   },
