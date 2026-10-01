@@ -19,7 +19,8 @@
     "@types/node": "^26.6.3",
     "@types/react": "~19.2.2",
     "tsx": "^4.23.15",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "wrangler": "^4.146.0"
   },
   "scripts": {
     "start": "expo start",
@@ -27,6 +28,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "build:web": "expo export --platform web",
+    "deploy:web": "wrangler deploy",
     "build:apk": "bun scripts/build-apk.ts",
     "release": "bun scripts/release.ts",
     "graphify": "graphify ."
