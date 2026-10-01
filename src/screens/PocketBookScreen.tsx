@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { POCKET_BOOK_SECTIONS } from '../data/pocketBookData';
 
@@ -63,13 +63,24 @@ export const PocketBookScreen: React.FC<PocketBookScreenProps> = ({ initialSecti
         {/* Comparison Table */}
         {activeSection.content.table && (
           <View style={styles.sectionBlock}>
-            <Text style={styles.sectionHeader}>Comparison Matrix</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={true} style={styles.tableScroll}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={true}
+              style={styles.tableScroll}
+              contentContainerStyle={styles.tableScrollContent}
+            >
               <View style={styles.table}>
                 {/* Header Row */}
                 <View style={styles.tableRowHeader}>
                   {activeSection.content.table.headers.map((h, i) => (
-                    <Text key={i} style={[styles.tableCell, styles.tableCellHeader, i === 0 && { width: 140 }]}>
+                    <Text
+                      key={i}
+                      style={[
+                        styles.tableCell,
+                        styles.tableCellHeader,
+                        i === 0 ? styles.tableCellFirst : styles.tableCellOther,
+                      ]}
+                    >
                       {h}
                     </Text>
                   ))}
@@ -78,7 +89,14 @@ export const PocketBookScreen: React.FC<PocketBookScreenProps> = ({ initialSecti
                 {activeSection.content.table.rows.map((row, rIdx) => (
                   <View key={rIdx} style={[styles.tableRow, rIdx % 2 === 1 && styles.tableRowAlt]}>
                     {row.map((cell, cIdx) => (
-                      <Text key={cIdx} style={[styles.tableCell, cIdx === 0 && styles.tableCellPrimary, cIdx === 0 && { width: 140 }]}>
+                      <Text
+                        key={cIdx}
+                        style={[
+                          styles.tableCell,
+                          cIdx === 0 && styles.tableCellPrimary,
+                          cIdx === 0 ? styles.tableCellFirst : styles.tableCellOther,
+                        ]}
+                      >
                         {cell}
                       </Text>
                     ))}
@@ -111,22 +129,27 @@ const styles = StyleSheet.create({
     backgroundColor: '#020617',
   },
   tabScroll: {
-    maxHeight: 52,
+    flexGrow: 0,
+    flexShrink: 0,
     borderBottomWidth: 1,
     borderBottomColor: '#1E293B',
+    backgroundColor: '#0F172A',
   },
   tabScrollContent: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
     gap: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: Platform.OS === 'web' ? 'wrap' : 'nowrap',
   },
   tabButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 7,
     backgroundColor: '#1E293B',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#334155',
@@ -137,8 +160,9 @@ const styles = StyleSheet.create({
   },
   tabText: {
     color: '#94A3B8',
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
+    lineHeight: 18,
   },
   tabTextActive: {
     color: '#0F172A',
@@ -149,7 +173,10 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 32,
+    paddingBottom: 40,
+    maxWidth: 860,
+    width: '100%',
+    alignSelf: 'center',
   },
   headerArea: {
     marginBottom: 16,
@@ -205,22 +232,30 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#334155',
     backgroundColor: '#0F172A',
+    width: '100%',
+  },
+  tableScrollContent: {
+    minWidth: '100%',
+    flexGrow: 1,
   },
   table: {
-    minWidth: 460,
+    width: '100%',
+    minWidth: '100%',
   },
   tableRowHeader: {
     flexDirection: 'row',
     backgroundColor: '#1E293B',
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#334155',
+    width: '100%',
   },
   tableRow: {
     flexDirection: 'row',
-    paddingVertical: 10,
+    paddingVertical: 11,
     borderBottomWidth: 1,
     borderBottomColor: '#1E293B',
+    width: '100%',
   },
   tableRowAlt: {
     backgroundColor: '#090D1A',
@@ -229,7 +264,15 @@ const styles = StyleSheet.create({
     color: '#E2E8F0',
     fontSize: 12,
     paddingHorizontal: 12,
-    width: 120,
+    lineHeight: 18,
+  },
+  tableCellFirst: {
+    minWidth: 150,
+    flex: 1.3,
+  },
+  tableCellOther: {
+    minWidth: 130,
+    flex: 1,
   },
   tableCellHeader: {
     color: '#94A3B8',

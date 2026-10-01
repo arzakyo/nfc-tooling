@@ -15,14 +15,19 @@
     "react-native-web": "^0.21.2"
   },
   "devDependencies": {
+    "@types/node": "^26.6.3",
     "@types/react": "~19.2.2",
+    "tsx": "^4.23.15",
     "typescript": "~6.0.3"
   },
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "build:apk": "bun scripts/build-apk.ts",
+    "release": "bun scripts/release.ts",
+    "graphify": "graphify ."
   },
   "private": true
 }

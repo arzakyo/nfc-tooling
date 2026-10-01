@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { FAQ_DATA, FaqItem } from '../data/faqData';
 
@@ -108,19 +108,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#020617',
   },
   catScroll: {
-    maxHeight: 52,
+    flexGrow: 0,
+    flexShrink: 0,
     borderBottomWidth: 1,
     borderBottomColor: '#1E293B',
+    backgroundColor: '#0F172A',
   },
   catScrollContent: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
     gap: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: Platform.OS === 'web' ? 'wrap' : 'nowrap',
   },
   catPill: {
     backgroundColor: '#1E293B',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: '#334155',
@@ -131,8 +136,9 @@ const styles = StyleSheet.create({
   },
   catText: {
     color: '#94A3B8',
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
+    lineHeight: 18,
   },
   catTextActive: {
     color: '#0F172A',
@@ -143,7 +149,10 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 32,
+    paddingBottom: 40,
+    maxWidth: 860,
+    width: '100%',
+    alignSelf: 'center',
   },
   header: {
     marginBottom: 16,

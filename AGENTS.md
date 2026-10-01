@@ -57,3 +57,22 @@ Docs: https://docs.expo.dev/eas/index.md
 - **Random UID Detection:** If a card's 4-byte UID starts with `08:`, flag it as a **Random UID (Anti-Tracking)**. It is typical for Mifare DESFire EV2/EV3 cards.
 - **Smart Card APDUs (Indonesian E-Money):** E-money cards (Mandiri, Flazz, Brizzi, TapCash) store data in ISO 7816-4 files, not NDEF. Always use `IsoDep` / `NfcTech.IsoDep` when connecting to these cards. Web NFC cannot run APDUs.
 
+| Card | Application Identifier (AID) | Command Structure |
+| :--- | :--- | :--- |
+| **Mandiri e-Money** | `A0 00 00 00 03 00 00 00` | Select AID $\rightarrow$ Read PAN (`00 B2 01 0C 1D`) $\rightarrow$ Read Balance (`00 B0 00 00 04`) |
+| **BCA Flazz (Gen 2)** | `A0 00 00 00 03 10 10` | Select AID $\rightarrow$ Read Balance & Records |
+| **BNI TapCash** | `D2 76 00 00 85 01 01` / Custom | ISO-DEP Applet (Phase 3) |
+| **BRI Brizzi** | Custom ISO-DEP Applet | ISO-DEP Applet (Phase 3) |
+
+### Build & Release Scripts
+- `bun run release` — Executes `scripts/release.ts`: prebuilds, signs, and publishes directly to GitHub Releases via `gh release create`.
+- `bun run build:apk` — Executes `scripts/build-apk.ts`: compiles local `./nfc-tooling.apk` without publishing.
+- `bunx expo export --platform web` — Generates static SPA in `dist/` ready for Cloudflare Pages / Vercel.
+
+### Knowledge Graph (Graphify)
+- A persistent code knowledge graph is maintained in `graphify-out/graph.json` and `graphify-out/graph.html`.
+- **Regenerate on any device:** Run `bun run graphify` or `graphify .` (requires `pip install graphifyy` or `/graphify` in Antigravity). It uses deterministic local AST parsing and requires zero API keys.
+- **Query:** Run `graphify query "<question>"` to trace symbols, data flow, or architecture dependencies across the repository.
+- Detailed rules are located in `.agents/rules/graphify.md`.
+
+

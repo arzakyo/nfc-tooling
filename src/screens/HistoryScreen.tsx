@@ -104,6 +104,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#020617',
     paddingHorizontal: 16,
     paddingTop: 12,
+    maxWidth: 860,
+    width: '100%',
+    alignSelf: 'center',
   },
   topBar: {
     marginBottom: 12,

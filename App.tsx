@@ -27,35 +27,37 @@ export default function App() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#020617" />
       
-      {/* Top Navigation Bar */}
-      <View style={styles.navBar}>
-        <View style={styles.brandRow}>
-          <View style={styles.logoIcon}>
-            <Ionicons name="hardware-chip" size={18} color="#38BDF8" />
+      <View style={styles.appShell}>
+        {/* Top Navigation Bar */}
+        <View style={styles.navBar}>
+          <View style={styles.brandRow}>
+            <View style={styles.logoIcon}>
+              <Ionicons name="hardware-chip" size={18} color="#38BDF8" />
+            </View>
+            <Text style={styles.brandTitle}>NFC Tooling</Text>
           </View>
-          <Text style={styles.brandTitle}>NFC Tooling</Text>
+          <View style={styles.platformBadge}>
+            <Text style={styles.platformText}>
+              {Platform.OS === 'web' ? 'Web Mode' : `${Platform.OS.toUpperCase()} Native`}
+            </Text>
+          </View>
         </View>
-        <View style={styles.platformBadge}>
-          <Text style={styles.platformText}>
-            {Platform.OS === 'web' ? 'Web Mode' : `${Platform.OS.toUpperCase()} Native`}
-          </Text>
+
+        {/* Active Tab Screen */}
+        <View style={styles.screenContainer}>
+          {activeTab === 'scan' && <ScanScreen />}
+          {activeTab === 'pocketbook' && (
+            <PocketBookScreen initialSectionId={targetPocketBookSection} />
+          )}
+          {activeTab === 'faq' && (
+            <FaqScreen onOpenPocketBookSection={handleOpenPocketBookSection} />
+          )}
+          {activeTab === 'history' && <HistoryScreen />}
         </View>
-      </View>
 
-      {/* Active Tab Screen */}
-      <View style={styles.screenContainer}>
-        {activeTab === 'scan' && <ScanScreen />}
-        {activeTab === 'pocketbook' && (
-          <PocketBookScreen initialSectionId={targetPocketBookSection} />
-        )}
-        {activeTab === 'faq' && (
-          <FaqScreen onOpenPocketBookSection={handleOpenPocketBookSection} />
-        )}
-        {activeTab === 'history' && <HistoryScreen />}
+        {/* Bottom Navigation */}
+        <TabBar activeTab={activeTab} onSelectTab={handleSelectTab} />
       </View>
-
-      {/* Bottom Navigation */}
-      <TabBar activeTab={activeTab} onSelectTab={handleSelectTab} />
     </SafeAreaView>
   );
 }
@@ -64,6 +66,16 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#020617',
+  },
+  appShell: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 860,
+    alignSelf: 'center',
+    backgroundColor: '#020617',
+    borderLeftWidth: Platform.OS === 'web' ? 1 : 0,
+    borderRightWidth: Platform.OS === 'web' ? 1 : 0,
+    borderColor: '#1E293B',
   },
   navBar: {
     flexDirection: 'row',

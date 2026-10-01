@@ -129,6 +129,9 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
     paddingTop: 12,
+    maxWidth: 860,
+    width: '100%',
+    alignSelf: 'center',
   },
   topActions: {
     flexDirection: 'row',

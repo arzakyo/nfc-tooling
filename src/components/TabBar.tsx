@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#0F172A',
     borderTopWidth: 1,
     borderTopColor: '#1E293B',
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 8,
     justifyContent: 'space-around',
   },
@@ -58,11 +58,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flex: 1,
     gap: 4,
+    minHeight: 46,
   },
   label: {
     fontSize: 11,
     color: '#64748B',
     fontWeight: '600',
+    lineHeight: 14,
   },
   activeLabel: {
     color: '#38BDF8',
