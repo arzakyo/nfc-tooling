@@ -20,6 +20,20 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "react-native-nfc-manager",
+        {
+          "nfcPermission": "Allow NFC Tooling to scan and inspect contactless cards and tags.",
+          "selectIdentifiers": [
+            "A0000002471001",
+            "A0000000031010",
+            "A0000000041010",
+            "D2760000850101"
+          ]
+        }
+      ]
+    ]
   }
 }

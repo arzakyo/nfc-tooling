@@ -39,3 +39,21 @@ Docs: https://docs.expo.dev/eas/index.md
 - If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
 - Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
 - Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
+
+## NFC Tooling Specific Architecture & Rules
+
+### Dual-Engine Philosophy (Native vs. Web)
+- **Native (Android & iOS):** Deep hardware access using `react-native-nfc-manager`. Supports raw APDUs (`IsoDep.transceive`), e-Money balances, transaction logs, Mifare inspection, and haptic feedback.
+- **Web (Desktop & Mobile Web):** Must **NEVER crash** on unsupported native modules. Uses browser `window.NDEFReader` where available, and displays the "Download Mobile App" banner for features requiring deep APDU access.
+- **Strict Platform Guarding:**
+  - Any import or invocation of `react-native-nfc-manager` or `expo-haptics` MUST be guarded or isolated behind `.native.ts` / `.web.ts` file extensions or explicit `Platform.OS !== 'web'` checks.
+
+### 100% Offline & Zero Telemetry
+- This app is an on-device utility tool.
+- No external API calls, tracking pixels, or telemetry should be added to the core NFC reading logic.
+- All scan history is stored in local storage (`AsyncStorage`).
+
+### NFC Technical Context
+- **Random UID Detection:** If a card's 4-byte UID starts with `08:`, flag it as a **Random UID (Anti-Tracking)**. It is typical for Mifare DESFire EV2/EV3 cards.
+- **Smart Card APDUs (Indonesian E-Money):** E-money cards (Mandiri, Flazz, Brizzi, TapCash) store data in ISO 7816-4 files, not NDEF. Always use `IsoDep` / `NfcTech.IsoDep` when connecting to these cards. Web NFC cannot run APDUs.
+
