@@ -117,18 +117,35 @@ function checkAndroidSdk(): string | null {
   return null;
 }
 
+function getAndroidStudioPath(): string | null {
+  if (isWindows) {
+    const p = 'C:\\Program Files\\Android\\Android Studio\\bin\\studio64.exe';
+    if (fs.existsSync(p)) return p;
+    const p86 = 'C:\\Program Files (x86)\\Android\\Android Studio\\bin\\studio64.exe';
+    if (fs.existsSync(p86)) return p86;
+  }
+  return null;
+}
+
   // 3. Check Java JDK (17+) & Android SDK
   console.log('[2/5] Checking Java JDK 17 & Android environment...');
   const hasJava = isCommandAvailable('java') && isCommandAvailable('javac');
   const androidSdkPath = checkAndroidSdk();
+  const studioPath = getAndroidStudioPath();
 
   if (!hasJava || !androidSdkPath) {
     if (!hasJava) {
       console.log('\x1b[31m⚠️ Java JDK is not found in your PATH.\x1b[0m');
     }
     if (!androidSdkPath) {
-      console.log('\x1b[33m⚠️ Android SDK is not detected on your local machine.\x1b[0m');
-      console.log('Local Android builds require Java 17 and the Android SDK (platforms & build-tools).');
+      if (studioPath) {
+        console.log('\x1b[32m✓ Android Studio IDE is installed.\x1b[0m');
+        console.log('\x1b[33m⚠️ However, Android SDK components are not yet initialized.\x1b[0m');
+        console.log('Launch Android Studio once and complete the "Welcome / Setup Wizard" to download the SDK.');
+      } else {
+        console.log('\x1b[33m⚠️ Android SDK is not detected on your local machine.\x1b[0m');
+        console.log('Local Android builds require Java 17 and the Android SDK (platforms & build-tools).');
+      }
     }
 
     console.log('\n💡 \x1b[36mRecommendation:\x1b[0m You can build directly in the cloud using GitHub Actions!');
@@ -184,31 +201,48 @@ function checkAndroidSdk(): string | null {
     }
 
     if (!androidSdkPath) {
-      menuOptions.push({
-        key: String(menuOptions.length + 1),
-        label: 'Install Android Studio & SDK via winget',
-        action: async () => {
-          if (isWindows) {
-            console.log('\nRequesting Administrator privileges to install Android Studio...');
-            const elevated = runCmd('powershell', [
-              '-Command',
-              `Start-Process winget -ArgumentList 'install -e --id Google.AndroidStudio --accept-package-agreements --accept-source-agreements' -Verb RunAs -Wait`,
-            ]);
-            if (!elevated) {
-              console.log('\n\x1b[33mTip: If UAC failed, open PowerShell as Administrator and run:\x1b[0m');
-              console.log('  winget install --id Google.AndroidStudio -e');
-            } else {
-              console.log('\n\x1b[32mAndroid Studio installation completed/launched.\x1b[0m');
-              console.log('Launch Android Studio once to complete SDK setup, then restart your terminal and re-run.');
+      if (studioPath) {
+        menuOptions.push({
+          key: String(menuOptions.length + 1),
+          label: 'Launch Android Studio (complete Setup Wizard to download SDK)',
+          action: async () => {
+            console.log(`\nLaunching Android Studio from: ${studioPath}...`);
+            if (isWindows) {
+              runCmd('powershell', ['-Command', `Start-Process '${studioPath}'`]);
             }
-          } else if (isMac) {
-            runCmd('brew', ['install', '--cask', 'android-studio']);
-          } else {
-            console.log('Please install Android Studio from https://developer.android.com/studio');
-          }
-          process.exit(0);
-        },
-      });
+            console.log('\n\x1b[36mInstructions:\x1b[0m In the Android Studio setup wizard, select "Standard" and click "Finish"');
+            console.log('to download the SDK into AppData\\Local\\Android\\Sdk.');
+            console.log('Once completed, restart this script to build locally!\n');
+            process.exit(0);
+          },
+        });
+      } else {
+        menuOptions.push({
+          key: String(menuOptions.length + 1),
+          label: 'Install Android Studio & SDK via winget',
+          action: async () => {
+            if (isWindows) {
+              console.log('\nRequesting Administrator privileges to install Android Studio...');
+              const elevated = runCmd('powershell', [
+                '-Command',
+                `Start-Process winget -ArgumentList 'install -e --id Google.AndroidStudio --accept-package-agreements --accept-source-agreements' -Verb RunAs -Wait`,
+              ]);
+              if (!elevated) {
+                console.log('\n\x1b[33mTip: If UAC failed, open PowerShell as Administrator and run:\x1b[0m');
+                console.log('  winget install --id Google.AndroidStudio -e');
+              } else {
+                console.log('\n\x1b[32mAndroid Studio installation completed/launched.\x1b[0m');
+                console.log('Launch Android Studio once to complete SDK setup, then restart your terminal and re-run.');
+              }
+            } else if (isMac) {
+              runCmd('brew', ['install', '--cask', 'android-studio']);
+            } else {
+              console.log('Please install Android Studio from https://developer.android.com/studio');
+            }
+            process.exit(0);
+          },
+        });
+      }
     }
 
     menuOptions.push({

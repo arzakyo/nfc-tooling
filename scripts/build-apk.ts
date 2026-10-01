@@ -67,6 +67,16 @@ function checkAndroidSdk(): string | null {
   return null;
 }
 
+function getAndroidStudioPath(): string | null {
+  if (isWindows) {
+    const p = 'C:\\Program Files\\Android\\Android Studio\\bin\\studio64.exe';
+    if (fs.existsSync(p)) return p;
+    const p86 = 'C:\\Program Files (x86)\\Android\\Android Studio\\bin\\studio64.exe';
+    if (fs.existsSync(p86)) return p86;
+  }
+  return null;
+}
+
 async function main() {
   console.log('\x1b[36m%s\x1b[0m', '=========================================');
   console.log('\x1b[36m%s\x1b[0m', ' 📱 NFC Tooling Local APK Builder (TS)   ');
@@ -74,6 +84,7 @@ async function main() {
 
   const hasJava = isCommandAvailable('java') && isCommandAvailable('javac');
   const androidSdkPath = checkAndroidSdk();
+  const studioPath = getAndroidStudioPath();
 
   if (!hasJava || !androidSdkPath) {
     if (!hasJava) {
@@ -133,31 +144,48 @@ async function main() {
     }
 
     if (!androidSdkPath) {
-      menuOptions.push({
-        key: String(menuOptions.length + 1),
-        label: 'Install Android Studio & SDK via winget',
-        action: async () => {
-          if (isWindows) {
-            console.log('\nRequesting Administrator privileges to install Android Studio...');
-            const elevated = runCmd('powershell', [
-              '-Command',
-              `Start-Process winget -ArgumentList 'install -e --id Google.AndroidStudio --accept-package-agreements --accept-source-agreements' -Verb RunAs -Wait`,
-            ]);
-            if (!elevated) {
-              console.log('\n\x1b[33mTip: If UAC failed, open PowerShell as Administrator and run:\x1b[0m');
-              console.log('  winget install --id Google.AndroidStudio -e');
-            } else {
-              console.log('\n\x1b[32mAndroid Studio installation completed/launched.\x1b[0m');
-              console.log('Launch Android Studio once to complete SDK setup, then restart your terminal and re-run.');
+      if (studioPath) {
+        menuOptions.push({
+          key: String(menuOptions.length + 1),
+          label: 'Launch Android Studio (complete Setup Wizard to download SDK)',
+          action: async () => {
+            console.log(`\nLaunching Android Studio from: ${studioPath}...`);
+            if (isWindows) {
+              runCmd('powershell', ['-Command', `Start-Process '${studioPath}'`]);
             }
-          } else if (isMac) {
-            runCmd('brew', ['install', '--cask', 'android-studio']);
-          } else {
-            console.log('Please install Android Studio from https://developer.android.com/studio');
-          }
-          process.exit(0);
-        },
-      });
+            console.log('\n\x1b[36mInstructions:\x1b[0m In the Android Studio setup wizard, select "Standard" and click "Finish"');
+            console.log('to download the SDK into AppData\\Local\\Android\\Sdk.');
+            console.log('Once completed, restart this script to build locally!\n');
+            process.exit(0);
+          },
+        });
+      } else {
+        menuOptions.push({
+          key: String(menuOptions.length + 1),
+          label: 'Install Android Studio & SDK via winget',
+          action: async () => {
+            if (isWindows) {
+              console.log('\nRequesting Administrator privileges to install Android Studio...');
+              const elevated = runCmd('powershell', [
+                '-Command',
+                `Start-Process winget -ArgumentList 'install -e --id Google.AndroidStudio --accept-package-agreements --accept-source-agreements' -Verb RunAs -Wait`,
+              ]);
+              if (!elevated) {
+                console.log('\n\x1b[33mTip: If UAC failed, open PowerShell as Administrator and run:\x1b[0m');
+                console.log('  winget install --id Google.AndroidStudio -e');
+              } else {
+                console.log('\n\x1b[32mAndroid Studio installation completed/launched.\x1b[0m');
+                console.log('Launch Android Studio once to complete SDK setup, then restart your terminal and re-run.');
+              }
+            } else if (isMac) {
+              runCmd('brew', ['install', '--cask', 'android-studio']);
+            } else {
+              console.log('Please install Android Studio from https://developer.android.com/studio');
+            }
+            process.exit(0);
+          },
+        });
+      }
     }
 
     menuOptions.push({
