@@ -7,12 +7,17 @@ import { saveScanToHistory } from '../services/storageService';
 import { CardInspectorView } from '../components/CardInspectorView';
 import { DownloadAppBanner } from '../components/DownloadAppBanner';
 import { useBackHandler } from '../hooks/useBackHandler';
+import { useTheme } from '../theme/ThemeContext';
+import { useI18n } from '../i18n/I18nContext';
 
 export const ScanScreen: React.FC = () => {
   const [scanning, setScanning] = useState(false);
   const [currentCard, setCurrentCard] = useState<ScannedCard | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSupported, setIsSupported] = useState<boolean | null>(null);
+
+  const { colors } = useTheme();
+  const { t } = useI18n();
 
   useEffect(() => {
     nfcService.isSupported().then(supported => {
@@ -54,7 +59,7 @@ export const ScanScreen: React.FC = () => {
         }
       );
     } catch (e: any) {
-      setErrorMsg(e?.message || 'Failed to scan');
+      setErrorMsg(e?.message || t.scan.scanErrorTitle);
       setScanning(false);
     }
   };
@@ -65,19 +70,19 @@ export const ScanScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {currentCard ? (
         <View style={styles.cardContainer}>
           <View style={styles.topActions}>
             <TouchableOpacity
-              style={styles.rescanBtn}
+              style={[styles.rescanBtn, { backgroundColor: colors.primary }]}
               onPress={() => {
                 setCurrentCard(null);
                 handleStartScan();
               }}
             >
-              <Ionicons name="scan-outline" size={16} color="#0F172A" />
-              <Text style={styles.rescanText}>Scan Another Card</Text>
+              <Ionicons name="scan-outline" size={16} color="#FFFFFF" />
+              <Text style={styles.rescanText}>{t.scan.startScan}</Text>
             </TouchableOpacity>
           </View>
           <CardInspectorView card={currentCard} />
@@ -93,49 +98,60 @@ export const ScanScreen: React.FC = () => {
           <DownloadAppBanner />
 
           <View style={styles.idleContainer}>
-            <View style={[styles.radarCircle, scanning && styles.radarActive]}>
+            <View
+              style={[
+                styles.radarCircle,
+                { backgroundColor: colors.surfaceBg, borderColor: colors.borderColor },
+                scanning && { borderColor: colors.primary, backgroundColor: colors.primaryLight },
+              ]}
+            >
               <Ionicons
                 name={scanning ? 'radio' : 'radio-outline'}
                 size={64}
-                color={scanning ? '#38BDF8' : '#64748B'}
+                color={scanning ? colors.primary : colors.textMuted}
               />
             </View>
 
-            <Text style={styles.headline}>
-              {scanning ? 'Hold Card Near NFC Antenna' : 'Ready to Inspect NFC Tag'}
+            <Text style={[styles.headline, { color: colors.textPrimary }]}>
+              {scanning ? t.scan.scanningTitle : t.scan.readyTitle}
             </Text>
 
-            <Text style={styles.subheadline}>
-              {scanning
-                ? 'Hold your card firmly against the back of your phone...'
-                : 'Works with NTAG stickers, Mifare Classic, DESFire EV3, and e-Money smart cards.'}
+            <Text style={[styles.subheadline, { color: colors.textSecondary }]}>
+              {scanning ? t.scan.scanningSubtitle : t.scan.readySubtitle}
             </Text>
 
             {errorMsg && (
-              <View style={styles.errorBox}>
-                <Ionicons name="alert-circle-outline" size={18} color="#F87171" />
-                <Text style={styles.errorText}>{errorMsg}</Text>
+              <View style={[styles.errorBox, { borderColor: colors.error, backgroundColor: 'rgba(239, 68, 68, 0.1)' }]}>
+                <Ionicons name="alert-circle-outline" size={18} color={colors.error} />
+                <Text style={[styles.errorText, { color: colors.error }]}>{errorMsg}</Text>
               </View>
             )}
 
             {scanning ? (
-              <TouchableOpacity style={styles.cancelBtn} onPress={handleStopScan}>
-                <ActivityIndicator color="#F87171" style={{ marginRight: 8 }} />
-                <Text style={styles.cancelText}>Cancel Scanning</Text>
+              <TouchableOpacity
+                style={[styles.cancelBtn, { backgroundColor: colors.surfaceBg, borderColor: colors.error }]}
+                onPress={handleStopScan}
+              >
+                <ActivityIndicator color={colors.error} style={{ marginRight: 8 }} />
+                <Text style={[styles.cancelText, { color: colors.error }]}>{t.scan.cancelScan}</Text>
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
-                style={[styles.scanBtn, isSupported === false && styles.disabledBtn]}
+                style={[
+                  styles.scanBtn,
+                  { backgroundColor: colors.primary },
+                  isSupported === false && styles.disabledBtn,
+                ]}
                 onPress={handleStartScan}
               >
-                <Ionicons name="scan" size={20} color="#0F172A" />
-                <Text style={styles.scanBtnText}>Start NFC Scan</Text>
+                <Ionicons name="scan" size={20} color="#FFFFFF" />
+                <Text style={styles.scanBtnText}>{t.scan.startScan}</Text>
               </TouchableOpacity>
             )}
 
             {isSupported === false && (
-              <Text style={styles.unsupportedText}>
-                NFC is not supported or not enabled on this device/browser.
+              <Text style={[styles.unsupportedText, { color: colors.error }]}>
+                {t.scan.nfcUnsupportedSubtitle}
               </Text>
             )}
           </View>
@@ -174,7 +190,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   rescanBtn: {
-    backgroundColor: '#38BDF8',
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 8,
@@ -183,7 +198,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   rescanText: {
-    color: '#0F172A',
+    color: '#FFFFFF',
     fontWeight: '700',
     fontSize: 13,
   },
@@ -199,33 +214,24 @@ const styles = StyleSheet.create({
     width: 140,
     height: 140,
     borderRadius: 70,
-    backgroundColor: '#1E293B',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,
     borderWidth: 2,
-    borderColor: '#334155',
-  },
-  radarActive: {
-    borderColor: '#38BDF8',
-    backgroundColor: 'rgba(56, 189, 248, 0.1)',
   },
   headline: {
-    color: '#F8FAFC',
     fontSize: 20,
     fontWeight: '700',
     textAlign: 'center',
     marginBottom: 8,
   },
   subheadline: {
-    color: '#94A3B8',
     fontSize: 14,
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 24,
   },
   scanBtn: {
-    backgroundColor: '#38BDF8',
     paddingVertical: 14,
     paddingHorizontal: 28,
     borderRadius: 12,
@@ -235,46 +241,39 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   disabledBtn: {
-    backgroundColor: '#475569',
+    backgroundColor: '#94A3B8',
   },
   scanBtnText: {
-    color: '#0F172A',
+    color: '#FFFFFF',
     fontWeight: '700',
     fontSize: 16,
   },
   cancelBtn: {
-    backgroundColor: '#1E293B',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 10,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#F87171',
   },
   cancelText: {
-    color: '#F87171',
     fontWeight: '600',
     fontSize: 14,
   },
   errorBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
     borderWidth: 1,
-    borderColor: '#EF4444',
     padding: 10,
     borderRadius: 8,
     marginBottom: 16,
     gap: 8,
   },
   errorText: {
-    color: '#F87171',
     fontSize: 12,
     flex: 1,
   },
   unsupportedText: {
-    color: '#EF4444',
     fontSize: 12,
     marginTop: 14,
     textAlign: 'center',

@@ -7,6 +7,8 @@ import {
   DIRECT_LATEST_APK_URL,
   GITHUB_RELEASES_PAGE_URL,
 } from '../services/githubReleaseService';
+import { useTheme } from '../theme/ThemeContext';
+import { useI18n } from '../i18n/I18nContext';
 
 export const DownloadAppBanner: React.FC = () => {
   // Only display on Web
@@ -14,10 +16,12 @@ export const DownloadAppBanner: React.FC = () => {
     return null;
   }
 
+  const { colors } = useTheme();
+  const { t } = useI18n();
+
   const [releases, setReleases] = useState<GitHubRelease[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAllVersions, setShowAllVersions] = useState(false);
-  const [expandedReleaseId, setExpandedReleaseId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchGitHubReleases().then((data) => {
@@ -41,29 +45,24 @@ export const DownloadAppBanner: React.FC = () => {
     Linking.openURL(GITHUB_RELEASES_PAGE_URL);
   };
 
-  const toggleExpandRelease = (id: number) => {
-    setExpandedReleaseId(prev => (prev === id ? null : id));
-  };
-
   return (
-    <View style={styles.banner}>
+    <View style={[styles.banner, { backgroundColor: colors.cardBg, borderColor: colors.borderColor }]}>
       {/* Top Header */}
       <View style={styles.topRow}>
-        <View style={styles.iconCircle}>
-          <Ionicons name="phone-portrait-outline" size={24} color="#38BDF8" />
+        <View style={[styles.iconCircle, { backgroundColor: colors.primaryLight }]}>
+          <Ionicons name="phone-portrait-outline" size={24} color={colors.primary} />
         </View>
         <View style={styles.headerText}>
           <View style={styles.badgeRow}>
-            <Text style={styles.title}>Download Native Mobile App</Text>
+            <Text style={[styles.title, { color: colors.textPrimary }]}>{t.banner.downloadNative}</Text>
             {latestRelease && (
-              <View style={styles.versionBadge}>
-                <Text style={styles.versionText}>{latestRelease.tagName}</Text>
+              <View style={[styles.versionBadge, { backgroundColor: colors.primaryLight, borderColor: colors.primary }]}>
+                <Text style={[styles.versionText, { color: colors.primary }]}>{latestRelease.tagName}</Text>
               </View>
             )}
           </View>
-          <Text style={styles.description}>
-            Web browsers block raw APDU commands for security. Install the Android APK to unlock deep
-            scanning for Mandiri e-Money, BCA Flazz balances, and Mifare/DESFire cards.
+          <Text style={[styles.description, { color: colors.textSecondary }]}>
+            {t.banner.nativePromo}
           </Text>
         </View>
       </View>
@@ -71,104 +70,94 @@ export const DownloadAppBanner: React.FC = () => {
       {/* Primary Action Buttons */}
       <View style={styles.actionsRow}>
         <TouchableOpacity
-          style={styles.downloadBtn}
+          style={[styles.downloadBtn, { backgroundColor: colors.primary }]}
           onPress={handleDownloadLatest}
           activeOpacity={0.8}
         >
           <Ionicons name="download-outline" size={16} color="#0F172A" />
           <Text style={styles.downloadBtnText}>
-            Download APK {latestRelease?.fileSize ? `(${latestRelease.fileSize})` : ''}
+            {t.banner.downloadApk.replace('{{size}}', latestRelease?.fileSize ? ` (${latestRelease.fileSize})` : '')}
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.toggleBtn}
+          style={[styles.toggleBtn, { backgroundColor: colors.surfaceBg, borderColor: colors.borderColor }]}
           onPress={() => setShowAllVersions(!showAllVersions)}
           activeOpacity={0.7}
         >
           <Ionicons
             name={showAllVersions ? 'chevron-up-outline' : 'list-outline'}
             size={16}
-            color="#E2E8F0"
+            color={colors.textSecondary}
           />
-          <Text style={styles.toggleBtnText}>
-            {showAllVersions ? 'Hide Versions' : 'Other Versions'}
+          <Text style={[styles.toggleBtnText, { color: colors.textSecondary }]}>
+            {t.banner.olderVersions}
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.githubBtn} onPress={handleOpenGithub} activeOpacity={0.7}>
-          <Ionicons name="logo-github" size={16} color="#94A3B8" />
-          <Text style={styles.githubBtnText}>GitHub</Text>
+        <TouchableOpacity
+          style={[styles.githubBtn, { backgroundColor: colors.surfaceBg, borderColor: colors.borderColor }]}
+          onPress={handleOpenGithub}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="logo-github" size={16} color={colors.textSecondary} />
+          <Text style={[styles.githubBtnText, { color: colors.textSecondary }]}>GitHub</Text>
         </TouchableOpacity>
       </View>
 
       {/* Expandable Version List & Changelogs */}
       {showAllVersions && (
-        <View style={styles.versionDrawer}>
-          <View style={styles.drawerHeaderRow}>
-            <Text style={styles.drawerTitle}>Previous Versions</Text>
-            <TouchableOpacity onPress={handleOpenGithub}>
-              <Text style={styles.viewAllGithubText}>All on GitHub ➔</Text>
-            </TouchableOpacity>
-          </View>
-
+        <View style={[styles.versionDrawer, { borderTopColor: colors.borderColor }]}>
+          <Text style={[styles.drawerTitle, { color: colors.textPrimary }]}>Release History & Downloads</Text>
           {loading ? (
-            <ActivityIndicator color="#38BDF8" style={{ marginVertical: 12 }} />
+            <ActivityIndicator color={colors.primary} style={{ marginVertical: 12 }} />
           ) : (
-            releases.map((rel) => {
-              const isExpanded = expandedReleaseId === rel.id;
-              const changelogLines = rel.body
-                .split('\n')
-                .map((line) => line.trim())
-                .filter((line) => line.length > 0);
-
-              return (
-                <View key={rel.id} style={styles.releaseCard}>
+            releases.map((rel, idx) => (
+              <View
+                key={rel.id || idx}
+                style={[styles.releaseCard, { backgroundColor: colors.surfaceBg, borderColor: colors.borderColor }]}
+              >
+                <View style={styles.releaseHeader}>
+                  <View style={[styles.releaseTagBadge, { backgroundColor: colors.primaryLight }]}>
+                    <Text style={[styles.releaseTagText, { color: colors.primary }]}>{rel.tagName}</Text>
+                  </View>
+                  <Text style={[styles.releaseDate, { color: colors.textMuted }]}>{rel.publishedAt}</Text>
                   <TouchableOpacity
-                    style={styles.releaseHeader}
-                    onPress={() => toggleExpandRelease(rel.id)}
-                    activeOpacity={0.7}
+                    style={[styles.inlineDownloadBtn, { backgroundColor: colors.primaryLight, borderColor: colors.primary }]}
+                    onPress={() => handleDownloadSpecific(rel.apkDownloadUrl)}
                   >
-                    <View style={styles.releaseTagBadge}>
-                      <Text style={styles.releaseTagText}>{rel.tagName}</Text>
-                    </View>
-                    <Text style={styles.releaseDate}>{rel.publishedAt}</Text>
-                    <View style={styles.headerRightActions}>
-                      <TouchableOpacity
-                        style={styles.inlineDownloadBtn}
-                        onPress={() => handleDownloadSpecific(rel.apkDownloadUrl)}
-                      >
-                        <Ionicons name="download-outline" size={12} color="#38BDF8" />
-                        <Text style={styles.inlineDownloadText}>APK</Text>
-                      </TouchableOpacity>
-                      <Ionicons
-                        name={isExpanded ? 'chevron-up' : 'chevron-down'}
-                        size={14}
-                        color="#64748B"
-                      />
-                    </View>
+                    <Ionicons name="download-outline" size={13} color={colors.primary} />
+                    <Text style={[styles.inlineDownloadText, { color: colors.primary }]}>Get APK</Text>
                   </TouchableOpacity>
-
-                  {/* Changelog lines accordion */}
-                  {isExpanded && changelogLines.length > 0 && (
-                    <View style={styles.changelogContent}>
-                      {changelogLines.map((line, lIdx) => (
-                        <View key={lIdx} style={styles.changelogLine}>
-                          <Ionicons
-                            name="checkmark-circle"
-                            size={12}
-                            color="#38BDF8"
-                            style={{ marginTop: 2 }}
-                          />
-                          <Text style={styles.changelogText}>{line.replace(/^[-*]\s*/, '')}</Text>
-                        </View>
-                      ))}
-                    </View>
-                  )}
                 </View>
-              );
-            })
+
+                {/* Changelog lines */}
+                <View style={styles.changelogContent}>
+                  {rel.body
+                    .split('\n')
+                    .filter((line) => line.trim().length > 0)
+                    .map((line, lIdx) => (
+                      <View key={lIdx} style={styles.changelogLine}>
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={13}
+                          color={colors.primary}
+                          style={{ marginTop: 2 }}
+                        />
+                        <Text style={[styles.changelogText, { color: colors.textSecondary }]}>
+                          {line.replace(/^[-*]\s*/, '')}
+                        </Text>
+                      </View>
+                    ))}
+                </View>
+              </View>
+            ))
           )}
+
+          <Text style={[styles.installTip, { color: colors.textMuted, backgroundColor: colors.surfaceBg }]}>
+            💡 Tip: When downloading on Android, tap &quot;Download anyway&quot; if prompted and enable
+            &quot;Install from unknown sources&quot; in settings.
+          </Text>
         </View>
       )}
     </View>
@@ -177,12 +166,10 @@ export const DownloadAppBanner: React.FC = () => {
 
 const styles = StyleSheet.create({
   banner: {
-    backgroundColor: '#1E293B',
     borderRadius: 14,
     padding: 16,
     marginVertical: 12,
     borderWidth: 1,
-    borderColor: '#334155',
   },
   topRow: {
     flexDirection: 'row',
@@ -194,7 +181,6 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(56, 189, 248, 0.12)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -209,25 +195,20 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   title: {
-    color: '#F8FAFC',
     fontSize: 16,
     fontWeight: '700',
   },
   versionBadge: {
-    backgroundColor: 'rgba(56, 189, 248, 0.2)',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(56, 189, 248, 0.4)',
   },
   versionText: {
-    color: '#38BDF8',
     fontSize: 11,
     fontWeight: '700',
   },
   description: {
-    color: '#94A3B8',
     fontSize: 13,
     lineHeight: 18,
   },
@@ -238,7 +219,6 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   downloadBtn: {
-    backgroundColor: '#38BDF8',
     paddingVertical: 9,
     paddingHorizontal: 16,
     borderRadius: 8,
@@ -252,34 +232,28 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   toggleBtn: {
-    backgroundColor: '#0F172A',
     paddingVertical: 9,
     paddingHorizontal: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#334155',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
   toggleBtnText: {
-    color: '#E2E8F0',
     fontSize: 12,
     fontWeight: '600',
   },
   githubBtn: {
-    backgroundColor: '#0F172A',
     paddingVertical: 9,
     paddingHorizontal: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#334155',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
   githubBtnText: {
-    color: '#94A3B8',
     fontSize: 12,
     fontWeight: '600',
   },
@@ -287,82 +261,52 @@ const styles = StyleSheet.create({
     marginTop: 14,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#334155',
-  },
-  drawerHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
   },
   drawerTitle: {
-    color: '#F8FAFC',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  viewAllGithubText: {
-    color: '#38BDF8',
-    fontSize: 12,
-    fontWeight: '600',
+    marginBottom: 10,
   },
   releaseCard: {
-    backgroundColor: '#0F172A',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    marginBottom: 6,
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#1E293B',
   },
   releaseHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-  },
-  headerRightActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    marginBottom: 6,
   },
   releaseTagBadge: {
-    backgroundColor: '#1E293B',
-    paddingHorizontal: 6,
+    paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 5,
+    borderRadius: 6,
   },
   releaseTagText: {
-    color: '#38BDF8',
     fontWeight: '700',
-    fontSize: 11,
+    fontSize: 12,
   },
   releaseDate: {
-    color: '#64748B',
-    fontSize: 11,
+    fontSize: 12,
     flex: 1,
   },
   inlineDownloadBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: 'rgba(56, 189, 248, 0.1)',
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(56, 189, 248, 0.3)',
   },
   inlineDownloadText: {
-    color: '#38BDF8',
     fontSize: 11,
     fontWeight: '700',
   },
   changelogContent: {
-    marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#1E293B',
+    marginTop: 4,
   },
   changelogLine: {
     flexDirection: 'row',
@@ -370,17 +314,14 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   changelogText: {
-    color: '#CBD5E1',
     fontSize: 12,
     lineHeight: 16,
     flex: 1,
   },
   installTip: {
-    color: '#94A3B8',
     fontSize: 11,
     fontStyle: 'italic',
     marginTop: 10,
-    backgroundColor: 'rgba(15, 23, 42, 0.6)',
     padding: 8,
     borderRadius: 6,
   },

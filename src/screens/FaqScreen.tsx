@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { FAQ_DATA, FaqItem } from '../data/faqData';
+import { FAQ_DATA_EN, FAQ_DATA_ID, FaqItem } from '../data/faqData';
+import { useTheme } from '../theme/ThemeContext';
+import { useI18n } from '../i18n/I18nContext';
 
 interface FaqScreenProps {
   onOpenPocketBookSection: (sectionId: string) => void;
@@ -9,32 +11,58 @@ interface FaqScreenProps {
 
 export const FaqScreen: React.FC<FaqScreenProps> = ({ onOpenPocketBookSection }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [expandedId, setExpandedId] = useState<string | null>(FAQ_DATA[0].id);
+  const [expandedId, setExpandedId] = useState<string | null>('faq-how-app-works');
 
-  const categories = ['All', 'General', 'Security & Cloning', 'E-Money & Banking', 'Web vs Native'];
+  const { colors } = useTheme();
+  const { language, t } = useI18n();
+
+  const faqData: FaqItem[] = language === 'id' ? FAQ_DATA_ID : FAQ_DATA_EN;
+
+  const categories = [
+    { key: 'All', label: t.faq.categoryAll },
+    { key: 'General', label: t.faq.categoryGeneral },
+    { key: 'Security & Cloning', label: t.faq.categorySecurity },
+    { key: 'E-Money & Banking', label: t.faq.categoryEmoney },
+    { key: 'Web vs Native', label: t.faq.categoryWebNative },
+  ];
 
   const filteredFaqs = selectedCategory === 'All'
-    ? FAQ_DATA
-    : FAQ_DATA.filter(item => item.category === selectedCategory);
+    ? faqData
+    : faqData.filter(item => item.category === selectedCategory);
 
   const toggleExpand = (id: string) => {
     setExpandedId(prev => (prev === id ? null : id));
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Category Pills */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.catScroll} contentContainerStyle={styles.catScrollContent}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={[styles.catScroll, { backgroundColor: colors.navBg, borderBottomColor: colors.borderColor }]}
+        contentContainerStyle={styles.catScrollContent}
+      >
         {categories.map((cat) => {
-          const isSelected = selectedCategory === cat;
+          const isSelected = selectedCategory === cat.key;
           return (
             <TouchableOpacity
-              key={cat}
-              style={[styles.catPill, isSelected && styles.catPillActive]}
-              onPress={() => setSelectedCategory(cat)}
+              key={cat.key}
+              style={[
+                styles.catPill,
+                { backgroundColor: colors.surfaceBg, borderColor: colors.borderColor },
+                isSelected && { backgroundColor: colors.primary, borderColor: colors.primary },
+              ]}
+              onPress={() => setSelectedCategory(cat.key)}
             >
-              <Text style={[styles.catText, isSelected && styles.catTextActive]}>
-                {cat}
+              <Text
+                style={[
+                  styles.catText,
+                  { color: colors.textSecondary },
+                  isSelected && { color: '#FFFFFF', fontWeight: '700' },
+                ]}
+              >
+                {cat.label}
               </Text>
             </TouchableOpacity>
           );
@@ -44,52 +72,61 @@ export const FaqScreen: React.FC<FaqScreenProps> = ({ onOpenPocketBookSection })
       {/* FAQ Accordion List */}
       <ScrollView style={styles.scrollArea} contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Text style={styles.title}>Frequently Asked Questions</Text>
-          <Text style={styles.subtitle}>
-            Tap any question for quick answers and deep references to the Pocket Book.
+          <Text style={[styles.title, { color: colors.textPrimary }]}>{t.faq.title}</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+            {t.faq.subtitle}
           </Text>
         </View>
 
         {filteredFaqs.map((faq) => {
           const isExpanded = expandedId === faq.id;
           return (
-            <View key={faq.id} style={styles.faqCard}>
+            <View
+              key={faq.id}
+              style={[
+                styles.faqCard,
+                { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
+              ]}
+            >
               <TouchableOpacity
                 style={styles.faqQuestionRow}
                 onPress={() => toggleExpand(faq.id)}
                 activeOpacity={0.7}
               >
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.categoryBadge}>{faq.category}</Text>
-                  <Text style={styles.questionText}>{faq.question}</Text>
+                  <Text style={[styles.categoryBadge, { color: colors.primary }]}>{faq.category}</Text>
+                  <Text style={[styles.questionText, { color: colors.textPrimary }]}>{faq.question}</Text>
                 </View>
                 <Ionicons
                   name={isExpanded ? 'chevron-up' : 'chevron-down'}
                   size={20}
-                  color="#94A3B8"
+                  color={colors.textMuted}
                   style={{ marginLeft: 8 }}
                 />
               </TouchableOpacity>
 
               {/* Short Answer Always Visible */}
-              <View style={styles.shortAnswerBox}>
-                <Ionicons name="bulb-outline" size={16} color="#FBBF24" />
-                <Text style={styles.shortAnswerText}>{faq.shortAnswer}</Text>
+              <View style={[styles.shortAnswerBox, { backgroundColor: colors.surfaceBg }]}>
+                <Ionicons name="bulb-outline" size={16} color={colors.warning} />
+                <Text style={[styles.shortAnswerText, { color: colors.textPrimary }]}>{faq.shortAnswer}</Text>
               </View>
 
               {/* Expanded Detailed Content */}
               {isExpanded && (
-                <View style={styles.expandedContent}>
-                  <Text style={styles.detailedAnswer}>{faq.detailedAnswer}</Text>
+                <View style={[styles.expandedContent, { borderTopColor: colors.borderColor }]}>
+                  <Text style={[styles.detailedAnswer, { color: colors.textSecondary }]}>{faq.detailedAnswer}</Text>
 
                   {/* Deep Dive Action Link */}
                   <TouchableOpacity
-                    style={styles.deepDiveLink}
+                    style={[
+                      styles.deepDiveLink,
+                      { backgroundColor: colors.primaryLight, borderColor: colors.primary },
+                    ]}
                     onPress={() => onOpenPocketBookSection(faq.pocketBookSectionId)}
                   >
-                    <Ionicons name="book-outline" size={16} color="#38BDF8" />
-                    <Text style={styles.deepDiveText}>
-                      Deep dive: {faq.pocketBookSectionTitle} ➔
+                    <Ionicons name="book-outline" size={16} color={colors.primary} />
+                    <Text style={[styles.deepDiveText, { color: colors.primary }]}>
+                      {t.faq.readPocketBookRef}: {faq.pocketBookSectionTitle} ➔
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -105,14 +142,11 @@ export const FaqScreen: React.FC<FaqScreenProps> = ({ onOpenPocketBookSection })
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#020617',
   },
   catScroll: {
     flexGrow: 0,
     flexShrink: 0,
     borderBottomWidth: 1,
-    borderBottomColor: '#1E293B',
-    backgroundColor: '#0F172A',
   },
   catScrollContent: {
     paddingHorizontal: 16,
@@ -123,26 +157,15 @@ const styles = StyleSheet.create({
     flexWrap: Platform.OS === 'web' ? 'wrap' : 'nowrap',
   },
   catPill: {
-    backgroundColor: '#1E293B',
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#334155',
-  },
-  catPillActive: {
-    backgroundColor: '#38BDF8',
-    borderColor: '#38BDF8',
   },
   catText: {
-    color: '#94A3B8',
     fontSize: 13,
     fontWeight: '600',
     lineHeight: 18,
-  },
-  catTextActive: {
-    color: '#0F172A',
-    fontWeight: '700',
   },
   scrollArea: {
     flex: 1,
@@ -158,23 +181,19 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    color: '#F8FAFC',
     fontSize: 22,
     fontWeight: '800',
   },
   subtitle: {
-    color: '#94A3B8',
     fontSize: 13,
     marginTop: 2,
     lineHeight: 18,
   },
   faqCard: {
-    backgroundColor: '#1E293B',
     borderRadius: 12,
     padding: 14,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#334155',
   },
   faqQuestionRow: {
     flexDirection: 'row',
@@ -182,7 +201,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   categoryBadge: {
-    color: '#38BDF8',
     fontSize: 11,
     fontWeight: '700',
     textTransform: 'uppercase',
@@ -190,7 +208,6 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   questionText: {
-    color: '#F8FAFC',
     fontSize: 15,
     fontWeight: '700',
     lineHeight: 20,
@@ -199,13 +216,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#0F172A',
     padding: 10,
     borderRadius: 8,
     marginTop: 10,
   },
   shortAnswerText: {
-    color: '#E2E8F0',
     fontSize: 13,
     fontWeight: '600',
     flex: 1,
@@ -215,10 +230,8 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#334155',
   },
   detailedAnswer: {
-    color: '#94A3B8',
     fontSize: 13,
     lineHeight: 19,
     marginBottom: 12,
@@ -227,16 +240,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: 'rgba(56, 189, 248, 0.1)',
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
     alignSelf: 'flex-start',
     borderWidth: 1,
-    borderColor: 'rgba(56, 189, 248, 0.3)',
   },
   deepDiveText: {
-    color: '#38BDF8',
     fontSize: 12,
     fontWeight: '700',
   },

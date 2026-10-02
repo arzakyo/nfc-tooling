@@ -1,12 +1,13 @@
 {
   "name": "nfc-tooling",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "main": "index.ts",
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
     "@react-native-async-storage/async-storage": "2.2.0",
     "expo": "~57.0.26",
     "expo-haptics": "~57.0.3",
+    "expo-localization": "~57.0.2",
     "expo-status-bar": "~57.0.1",
     "expo-system-ui": "~57.0.4",
     "react": "19.2.3",

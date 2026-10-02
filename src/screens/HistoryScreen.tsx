@@ -5,6 +5,8 @@ import { ScannedCard } from '../services/nfc/nfcTypes';
 import { getScanHistory, clearScanHistory } from '../services/storageService';
 import { CardInspectorView } from '../components/CardInspectorView';
 import { useBackHandler } from '../hooks/useBackHandler';
+import { useTheme } from '../theme/ThemeContext';
+import { useI18n } from '../i18n/I18nContext';
 
 interface HistoryScreenProps {
   initialSelectedCardId?: string;
@@ -13,6 +15,9 @@ interface HistoryScreenProps {
 export const HistoryScreen: React.FC<HistoryScreenProps> = ({ initialSelectedCardId }) => {
   const [history, setHistory] = useState<ScannedCard[]>([]);
   const [selectedCard, setSelectedCard] = useState<ScannedCard | null>(null);
+
+  const { colors } = useTheme();
+  const { t } = useI18n();
 
   const loadHistory = async () => {
     const list = await getScanHistory();
@@ -60,14 +65,31 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ initialSelectedCar
   });
 
   const handleClear = async () => {
-    await clearScanHistory();
-    setHistory([]);
-    setSelectedCard(null);
+    const performClear = async () => {
+      await clearScanHistory();
+      setHistory([]);
+      setSelectedCard(null);
+    };
+
+    if (typeof window !== 'undefined' && window.confirm) {
+      if (window.confirm(t.history.clearConfirmMessage)) {
+        await performClear();
+      }
+    } else {
+      Alert.alert(
+        t.history.clearConfirmTitle,
+        t.history.clearConfirmMessage,
+        [
+          { text: t.history.clearConfirmCancel, style: 'cancel' },
+          { text: t.history.clearConfirmDelete, style: 'destructive', onPress: performClear },
+        ]
+      );
+    }
   };
 
   if (selectedCard) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.topBar}>
           <TouchableOpacity
             style={styles.backBtn}
@@ -79,8 +101,8 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ initialSelectedCar
               }
             }}
           >
-            <Ionicons name="arrow-back" size={18} color="#38BDF8" />
-            <Text style={styles.backBtnText}>Back to History</Text>
+            <Ionicons name="arrow-back" size={18} color={colors.primary} />
+            <Text style={[styles.backBtnText, { color: colors.primary }]}>{t.history.backToHistory}</Text>
           </TouchableOpacity>
         </View>
         <CardInspectorView card={selectedCard} />
@@ -89,26 +111,28 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ initialSelectedCar
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.title}>Scan History</Text>
-          <Text style={styles.subtitle}>{history.length} cards saved on this device</Text>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>{t.history.title}</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+            {t.history.historyCount.replace('{{count}}', String(history.length))}
+          </Text>
         </View>
         {history.length > 0 && (
           <TouchableOpacity style={styles.clearBtn} onPress={handleClear}>
-            <Ionicons name="trash-outline" size={16} color="#F87171" />
-            <Text style={styles.clearBtnText}>Clear</Text>
+            <Ionicons name="trash-outline" size={16} color={colors.error} />
+            <Text style={[styles.clearBtnText, { color: colors.error }]}>{t.history.clearAll}</Text>
           </TouchableOpacity>
         )}
       </View>
 
       {history.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Ionicons name="time-outline" size={48} color="#475569" />
-          <Text style={styles.emptyTitle}>No Scanned Cards Yet</Text>
-          <Text style={styles.emptyDesc}>
-            Cards you scan in the Inspector tab will be saved locally here for quick reference.
+          <Ionicons name="time-outline" size={48} color={colors.textMuted} />
+          <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>{t.history.emptyTitle}</Text>
+          <Text style={[styles.emptyDesc, { color: colors.textMuted }]}>
+            {t.history.emptySubtitle}
           </Text>
         </View>
       ) : (
@@ -118,7 +142,13 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ initialSelectedCar
           contentContainerStyle={styles.listContent}
           renderItem={({ item }) => (
             <TouchableOpacity
-              style={styles.cardItem}
+              style={[
+                styles.cardItem,
+                {
+                  backgroundColor: colors.cardBg,
+                  borderColor: colors.borderColor,
+                },
+              ]}
               onPress={() => {
                 setSelectedCard(item);
                 if (typeof window !== 'undefined') {
@@ -127,24 +157,24 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ initialSelectedCar
               }}
               activeOpacity={0.7}
             >
-              <View style={styles.cardIcon}>
-                <Ionicons name="card-outline" size={20} color="#38BDF8" />
+              <View style={[styles.cardIcon, { backgroundColor: colors.primaryLight }]}>
+                <Ionicons name="card-outline" size={20} color={colors.primary} />
               </View>
               <View style={{ flex: 1 }}>
                 <View style={styles.cardTopRow}>
-                  <Text style={styles.cardType}>{item.cardType}</Text>
-                  <Text style={styles.cardDate}>
+                  <Text style={[styles.cardType, { color: colors.textPrimary }]}>{item.cardType}</Text>
+                  <Text style={[styles.cardDate, { color: colors.textMuted }]}>
                     {new Date(item.scannedAt).toLocaleDateString()}
                   </Text>
                 </View>
-                <Text style={styles.cardUid}>{item.uid}</Text>
+                <Text style={[styles.cardUid, { color: colors.primary }]}>{item.uid}</Text>
                 {item.emoney && (
-                  <Text style={styles.emoneySnippet}>
+                  <Text style={[styles.emoneySnippet, { color: colors.success }]}>
                     {item.emoney.bank} {item.emoney.balance !== undefined ? `• Rp ${item.emoney.balance.toLocaleString('id-ID')}` : ''}
                   </Text>
                 )}
               </View>
-              <Ionicons name="chevron-forward" size={18} color="#64748B" />
+              <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
             </TouchableOpacity>
           )}
         />
@@ -156,7 +186,6 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ initialSelectedCar
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#020617',
     paddingHorizontal: 16,
     paddingTop: 12,
     maxWidth: 860,
@@ -173,7 +202,6 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   backBtnText: {
-    color: '#38BDF8',
     fontWeight: '700',
     fontSize: 14,
   },
@@ -184,12 +212,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    color: '#F8FAFC',
     fontSize: 22,
     fontWeight: '800',
   },
   subtitle: {
-    color: '#94A3B8',
     fontSize: 12,
     marginTop: 2,
   },
@@ -203,7 +229,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   clearBtnText: {
-    color: '#F87171',
     fontSize: 12,
     fontWeight: '600',
   },
@@ -214,13 +239,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   emptyTitle: {
-    color: '#94A3B8',
     fontSize: 16,
     fontWeight: '700',
     marginTop: 12,
   },
   emptyDesc: {
-    color: '#64748B',
     fontSize: 13,
     textAlign: 'center',
     lineHeight: 18,
@@ -232,19 +255,16 @@ const styles = StyleSheet.create({
   cardItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E293B',
     borderRadius: 12,
     padding: 14,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#334155',
     gap: 12,
   },
   cardIcon: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: 'rgba(56, 189, 248, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -254,22 +274,18 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   cardType: {
-    color: '#F8FAFC',
     fontSize: 14,
     fontWeight: '700',
   },
   cardDate: {
-    color: '#64748B',
     fontSize: 11,
   },
   cardUid: {
     fontFamily: 'monospace',
-    color: '#38BDF8',
     fontSize: 13,
     fontWeight: '600',
   },
   emoneySnippet: {
-    color: '#10B981',
     fontSize: 11,
     fontWeight: '600',
     marginTop: 2,

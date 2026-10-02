@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../theme/ThemeContext';
+import { useI18n } from '../i18n/I18nContext';
 
 interface HexViewerProps {
   label: string;
@@ -9,6 +11,8 @@ interface HexViewerProps {
 
 export const HexViewer: React.FC<HexViewerProps> = ({ label, hex }) => {
   const [copied, setCopied] = useState(false);
+  const { colors } = useTheme();
+  const { t } = useI18n();
 
   const handleCopy = () => {
     // In web or native, copy to clipboard
@@ -20,18 +24,36 @@ export const HexViewer: React.FC<HexViewerProps> = ({ label, hex }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.surfaceBg,
+          borderColor: colors.borderColor,
+        },
+      ]}
+    >
       <View style={styles.header}>
-        <Text style={styles.label}>{label}</Text>
+        <Text style={[styles.label, { color: colors.textSecondary }]}>{label}</Text>
         <TouchableOpacity onPress={handleCopy} style={styles.copyBtn}>
-          <Ionicons name={copied ? 'checkmark' : 'copy-outline'} size={14} color={copied ? '#10B981' : '#94A3B8'} />
-          <Text style={[styles.copyText, copied && { color: '#10B981' }]}>
-            {copied ? 'Copied' : 'Copy'}
+          <Ionicons
+            name={copied ? 'checkmark' : 'copy-outline'}
+            size={14}
+            color={copied ? colors.success : colors.textMuted}
+          />
+          <Text
+            style={[
+              styles.copyText,
+              { color: colors.textMuted },
+              copied && { color: colors.success },
+            ]}
+          >
+            {copied ? t.common.copied : t.common.copy}
           </Text>
         </TouchableOpacity>
       </View>
-      <View style={styles.hexBox}>
-        <Text style={styles.hexText}>{hex}</Text>
+      <View style={[styles.hexBox, { backgroundColor: colors.inputBg }]}>
+        <Text style={[styles.hexText, { color: colors.primary }]}>{hex}</Text>
       </View>
     </View>
   );
@@ -41,10 +63,8 @@ const styles = StyleSheet.create({
   container: {
     marginVertical: 4,
     borderRadius: 8,
-    backgroundColor: '#0F172A',
     padding: 10,
     borderWidth: 1,
-    borderColor: '#1E293B',
   },
   header: {
     flexDirection: 'row',
@@ -53,7 +73,6 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   label: {
-    color: '#94A3B8',
     fontSize: 12,
     fontWeight: '600',
     textTransform: 'uppercase',
@@ -65,17 +84,14 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   copyText: {
-    color: '#94A3B8',
     fontSize: 11,
   },
   hexBox: {
-    backgroundColor: '#020617',
     padding: 8,
     borderRadius: 6,
   },
   hexText: {
     fontFamily: 'monospace',
-    color: '#38BDF8',
     fontSize: 12,
     lineHeight: 18,
     letterSpacing: 1,

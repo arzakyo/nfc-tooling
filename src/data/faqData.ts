@@ -4,11 +4,11 @@ export interface FaqItem {
   question: string;
   shortAnswer: string;
   detailedAnswer: string;
-  pocketBookSectionId: string; // Links to Section in PocketBook
+  pocketBookSectionId: string;
   pocketBookSectionTitle: string;
 }
 
-export const FAQ_DATA: FaqItem[] = [
+export const FAQ_DATA_EN: FaqItem[] = [
   {
     id: 'faq-how-app-works',
     category: 'General',
@@ -70,3 +70,68 @@ export const FAQ_DATA: FaqItem[] = [
     pocketBookSectionTitle: 'NFC Chips Matrix (Recommendations)'
   }
 ];
+
+export const FAQ_DATA_ID: FaqItem[] = [
+  {
+    id: 'faq-how-app-works',
+    category: 'General',
+    question: 'Bagaimana cara kerja aplikasi ini dan apakah aman digunakan?',
+    shortAnswer: 'Aplikasi terhubung langsung ke antena chip NFC ponsel Anda 100% offline tanpa perantara cloud.',
+    detailedAnswer:
+      'Aplikasi ini beroperasi sepenuhnya secara lokal di perangkat Anda. Saat kartu NFC didekatkan, aplikasi membuka sesi RF, membaca deskriptor publik (UID, ATQA, SAK, dan record NDEF), serta meminta file kartu pintar melalui perintah APDU jika kartu uang elektronik terdeteksi. Tidak ada data yang dikirimkan ke internet.',
+    pocketBookSectionId: 'how-it-works',
+    pocketBookSectionTitle: 'Cara Kerja Aplikasi (Arsitektur & Privasi)'
+  },
+  {
+    id: 'faq-cloning-desfire',
+    category: 'Security & Cloning',
+    question: 'Bisakah seseorang menduplikasi (kloning) kartu DESFire EV3 saya?',
+    shortAnswer: 'Tidak. DESFire EV3 menggunakan enkripsi AES-128 canggih di dalam Secure Element tahan sabotase.',
+    detailedAnswer:
+      'DESFire EV3 hampir mustahil dikloning dengan perangkat modern saat ini. Kunci kriptografi terkunci secara fisik di dalam silikon. Sekalipun pihak luar membaca nomor seri 4-byte (yang juga biasanya diacak), turnstile gerbang memverifikasi kartu melalui jabat tangan kriptografi dinamis AES, bukan nomor seri luarnya.',
+    pocketBookSectionId: 'security-locking',
+    pocketBookSectionTitle: 'Keamanan & Anti-Sabotase (AES-128 & Random UID)'
+  },
+  {
+    id: 'faq-why-web-cannot-read-saldo',
+    category: 'Web vs Native',
+    question: 'Mengapa browser web atau PWA tidak bisa membaca saldo atau nomor kartu e-money?',
+    shortAnswer: 'Browser sengaja memblokir perintah APDU ISO-DEP mentah demi perlindungan keamanan web.',
+    detailedAnswer:
+      'Web NFC (NDEFReader) dibatasi secara ketat hanya untuk pesan standar NDEF (tautan web, teks). Saldo e-money dan 16 digit nomor kartu disimpan dalam file smart card (ISO 7816-4) yang memerlukan pengiriman perintah byte mentah (APDU). Browser memblokirnya agar situs jahat tidak dapat mengeksploitasi chip perbankan Anda.',
+    pocketBookSectionId: 'how-it-works',
+    pocketBookSectionTitle: 'Cara Kerja Aplikasi (Komparasi Platform)'
+  },
+  {
+    id: 'faq-emoney-offline-balance',
+    category: 'E-Money & Banking',
+    question: 'Bisakah saldo e-money diisi ulang tanpa menempelkan kartu ke ponsel?',
+    shortAnswer: 'Tidak bisa. Saldo e-money tersimpan di EEPROM chip fisik agar gerbang tol dapat membaca dalam waktu di bawah 300ms.',
+    detailedAnswer:
+      'Berbeda dengan dompet digital berbasis server (GoPay, OVO, DANA), kartu transit (Mandiri e-Money, BCA Flazz, Brizzi, TapCash) harus dapat memotong dana secara offline tanpa menunggu sinyal seluler. Pengisian ulang online hanya membuat "Saldo Tertunda" yang wajib disinkronkan ke dalam chip melalui tempelan NFC.',
+    pocketBookSectionId: 'chips-matrix',
+    pocketBookSectionTitle: 'Matriks Chip NFC (Smart Card & E-Money)'
+  },
+  {
+    id: 'faq-recover-locked-card',
+    category: 'Security & Cloning',
+    question: 'Jika kartu terkunci permanen (OTP lock), bisakah dipulihkan kembali?',
+    shortAnswer: 'Tidak bisa. Penguncian permanen secara fisik memutuskan sekring listrik mikroskopis (OTP) di dalam silikon.',
+    detailedAnswer:
+      'Ketika bit pengunci One-Time Programmable (OTP) diaktifkan pada chip NTAG atau Mifare, sekring listrik internal di dalam chip terbakar secara permanen. Jalur penulisan terputus secara fisik. Baik perangkat lunak, perintah backdoor, maupun pihak pabrikan tidak dapat membukanya kembali.',
+    pocketBookSectionId: 'security-locking',
+    pocketBookSectionTitle: 'Keamanan & Anti-Sabotase (Bit Pengunci OTP)'
+  },
+  {
+    id: 'faq-which-card-to-buy',
+    category: 'General',
+    question: 'Kartu atau stiker NFC apa yang sebaiknya dibeli untuk latihan dan pengujian?',
+    shortAnswer: 'Beli stiker NTAG215 (universal) dan kartu Mifare Classic CUID Magic Card (untuk kloning akses gerbang).',
+    detailedAnswer:
+      'Stiker NTAG215 berharga sekitar Rp 3.000–5.000 dan kompatibel universal di Android, iPhone, dan Web NFC. Jika Anda ingin bereksperimen menduplikasi kartu akses lift apartemen atau perumahan lama, beli kartu Mifare Classic 1K CUID yang Sektor 0 / UID-nya dapat ditulis ulang.',
+    pocketBookSectionId: 'chips-matrix',
+    pocketBookSectionTitle: 'Matriks Chip NFC (Rekomendasi)'
+  }
+];
+
+export const FAQ_DATA = FAQ_DATA_EN;

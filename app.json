@@ -2,7 +2,7 @@
   "expo": {
     "name": "nfc-tooling",
     "slug": "nfc-tooling",
-    "version": "1.0.2",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -45,7 +45,8 @@
             "D2760000850101"
           ]
         }
-      ]
+      ],
+      "expo-localization"
     ]
   }
 }

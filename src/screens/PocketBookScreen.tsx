@@ -1,35 +1,56 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { POCKET_BOOK_SECTIONS } from '../data/pocketBookData';
+import { POCKET_BOOK_SECTIONS_EN, POCKET_BOOK_SECTIONS_ID, PocketBookSection } from '../data/pocketBookData';
+import { useTheme } from '../theme/ThemeContext';
+import { useI18n } from '../i18n/I18nContext';
 
 interface PocketBookScreenProps {
   initialSectionId?: string;
 }
 
 export const PocketBookScreen: React.FC<PocketBookScreenProps> = ({ initialSectionId }) => {
-  const [selectedId, setSelectedId] = useState(initialSectionId || POCKET_BOOK_SECTIONS[0].id);
+  const { colors, activeTheme } = useTheme();
+  const { language } = useI18n();
 
-  const activeSection = POCKET_BOOK_SECTIONS.find(s => s.id === selectedId) || POCKET_BOOK_SECTIONS[0];
+  const sections: PocketBookSection[] = language === 'id' ? POCKET_BOOK_SECTIONS_ID : POCKET_BOOK_SECTIONS_EN;
+  const [selectedId, setSelectedId] = useState(initialSectionId || sections[0].id);
+
+  const activeSection = sections.find(s => s.id === selectedId) || sections[0];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Horizontal Category Nav */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabScroll} contentContainerStyle={styles.tabScrollContent}>
-        {POCKET_BOOK_SECTIONS.map((sec) => {
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={[styles.tabScroll, { backgroundColor: colors.navBg, borderBottomColor: colors.borderColor }]}
+        contentContainerStyle={styles.tabScrollContent}
+      >
+        {sections.map((sec) => {
           const isSelected = sec.id === selectedId;
           return (
             <TouchableOpacity
               key={sec.id}
-              style={[styles.tabButton, isSelected && styles.tabButtonActive]}
+              style={[
+                styles.tabButton,
+                { backgroundColor: colors.surfaceBg, borderColor: colors.borderColor },
+                isSelected && { backgroundColor: colors.primary, borderColor: colors.primary },
+              ]}
               onPress={() => setSelectedId(sec.id)}
             >
               <Ionicons
                 name={sec.icon as any}
                 size={16}
-                color={isSelected ? '#0F172A' : '#94A3B8'}
+                color={isSelected ? '#FFFFFF' : colors.textMuted}
               />
-              <Text style={[styles.tabText, isSelected && styles.tabTextActive]}>
+              <Text
+                style={[
+                  styles.tabText,
+                  { color: colors.textSecondary },
+                  isSelected && { color: '#FFFFFF', fontWeight: '700' },
+                ]}
+              >
                 {sec.title}
               </Text>
             </TouchableOpacity>
@@ -40,22 +61,24 @@ export const PocketBookScreen: React.FC<PocketBookScreenProps> = ({ initialSecti
       {/* Main Content Area */}
       <ScrollView style={styles.scrollArea} contentContainerStyle={styles.scrollContent}>
         <View style={styles.headerArea}>
-          <Text style={styles.title}>{activeSection.title}</Text>
-          <Text style={styles.subtitle}>{activeSection.subtitle}</Text>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>{activeSection.title}</Text>
+          <Text style={[styles.subtitle, { color: colors.primary }]}>{activeSection.subtitle}</Text>
         </View>
 
         {/* Summary Card */}
-        <View style={styles.card}>
-          <Text style={styles.summaryText}>{activeSection.content.summary}</Text>
+        <View style={[styles.card, { backgroundColor: colors.cardBg, borderColor: colors.borderColor }]}>
+          <Text style={[styles.summaryText, { color: colors.textPrimary }]}>{activeSection.content.summary}</Text>
         </View>
 
         {/* Key Highlights */}
         <View style={styles.sectionBlock}>
-          <Text style={styles.sectionHeader}>Key Highlights & Insights</Text>
+          <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>
+            {language === 'id' ? 'Sorotan Utama & Wawasan' : 'Key Highlights & Insights'}
+          </Text>
           {activeSection.content.highlights.map((item, idx) => (
             <View key={idx} style={styles.highlightRow}>
-              <Ionicons name="checkmark-circle" size={16} color="#38BDF8" style={{ marginTop: 2 }} />
-              <Text style={styles.highlightText}>{item}</Text>
+              <Ionicons name="checkmark-circle" size={16} color={colors.primary} style={{ marginTop: 2 }} />
+              <Text style={[styles.highlightText, { color: colors.textSecondary }]}>{item}</Text>
             </View>
           ))}
         </View>
@@ -66,18 +89,24 @@ export const PocketBookScreen: React.FC<PocketBookScreenProps> = ({ initialSecti
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={true}
-              style={styles.tableScroll}
+              style={[styles.tableScroll, { backgroundColor: colors.cardBg, borderColor: colors.borderColor }]}
               contentContainerStyle={styles.tableScrollContent}
             >
               <View style={styles.table}>
                 {/* Header Row */}
-                <View style={styles.tableRowHeader}>
+                <View
+                  style={[
+                    styles.tableRowHeader,
+                    { backgroundColor: colors.surfaceBg, borderBottomColor: colors.borderColor },
+                  ]}
+                >
                   {activeSection.content.table.headers.map((h, i) => (
                     <Text
                       key={i}
                       style={[
                         styles.tableCell,
                         styles.tableCellHeader,
+                        { color: colors.textMuted },
                         i === 0 ? styles.tableCellFirst : styles.tableCellOther,
                       ]}
                     >
@@ -87,13 +116,23 @@ export const PocketBookScreen: React.FC<PocketBookScreenProps> = ({ initialSecti
                 </View>
                 {/* Data Rows */}
                 {activeSection.content.table.rows.map((row, rIdx) => (
-                  <View key={rIdx} style={[styles.tableRow, rIdx % 2 === 1 && styles.tableRowAlt]}>
+                  <View
+                    key={rIdx}
+                    style={[
+                      styles.tableRow,
+                      { borderBottomColor: colors.borderColor },
+                      rIdx % 2 === 1 && {
+                        backgroundColor: activeTheme === 'dark' ? '#090D1A' : '#F8FAFC',
+                      },
+                    ]}
+                  >
                     {row.map((cell, cIdx) => (
                       <Text
                         key={cIdx}
                         style={[
                           styles.tableCell,
-                          cIdx === 0 && styles.tableCellPrimary,
+                          { color: colors.textPrimary },
+                          cIdx === 0 && { color: colors.primary, fontWeight: '700' },
                           cIdx === 0 ? styles.tableCellFirst : styles.tableCellOther,
                         ]}
                       >
@@ -109,11 +148,16 @@ export const PocketBookScreen: React.FC<PocketBookScreenProps> = ({ initialSecti
 
         {/* Notes & Tips */}
         {activeSection.content.notes && activeSection.content.notes.length > 0 && (
-          <View style={styles.notesBox}>
-            <Ionicons name="information-circle" size={20} color="#38BDF8" />
+          <View
+            style={[
+              styles.notesBox,
+              { backgroundColor: colors.primaryLight, borderColor: colors.primary },
+            ]}
+          >
+            <Ionicons name="information-circle" size={20} color={colors.primary} />
             <View style={{ flex: 1 }}>
               {activeSection.content.notes.map((n, i) => (
-                <Text key={i} style={styles.noteText}>{n}</Text>
+                <Text key={i} style={[styles.noteText, { color: colors.textPrimary }]}>{n}</Text>
               ))}
             </View>
           </View>
@@ -126,14 +170,11 @@ export const PocketBookScreen: React.FC<PocketBookScreenProps> = ({ initialSecti
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#020617',
   },
   tabScroll: {
     flexGrow: 0,
     flexShrink: 0,
     borderBottomWidth: 1,
-    borderBottomColor: '#1E293B',
-    backgroundColor: '#0F172A',
   },
   tabScrollContent: {
     paddingHorizontal: 16,
@@ -147,26 +188,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 7,
-    backgroundColor: '#1E293B',
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#334155',
-  },
-  tabButtonActive: {
-    backgroundColor: '#38BDF8',
-    borderColor: '#38BDF8',
   },
   tabText: {
-    color: '#94A3B8',
     fontSize: 13,
     fontWeight: '600',
     lineHeight: 18,
-  },
-  tabTextActive: {
-    color: '#0F172A',
-    fontWeight: '700',
   },
   scrollArea: {
     flex: 1,
@@ -182,26 +212,21 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    color: '#F8FAFC',
     fontSize: 22,
     fontWeight: '800',
   },
   subtitle: {
-    color: '#38BDF8',
     fontSize: 13,
     fontWeight: '600',
     marginTop: 2,
   },
   card: {
-    backgroundColor: '#1E293B',
     borderRadius: 12,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#334155',
     marginBottom: 16,
   },
   summaryText: {
-    color: '#E2E8F0',
     fontSize: 14,
     lineHeight: 20,
   },
@@ -209,7 +234,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   sectionHeader: {
-    color: '#94A3B8',
     fontSize: 12,
     fontWeight: '700',
     textTransform: 'uppercase',
@@ -222,7 +246,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   highlightText: {
-    color: '#E2E8F0',
     fontSize: 13,
     lineHeight: 18,
     flex: 1,
@@ -230,8 +253,6 @@ const styles = StyleSheet.create({
   tableScroll: {
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#334155',
-    backgroundColor: '#0F172A',
     width: '100%',
   },
   tableScrollContent: {
@@ -244,24 +265,17 @@ const styles = StyleSheet.create({
   },
   tableRowHeader: {
     flexDirection: 'row',
-    backgroundColor: '#1E293B',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#334155',
     width: '100%',
   },
   tableRow: {
     flexDirection: 'row',
     paddingVertical: 11,
     borderBottomWidth: 1,
-    borderBottomColor: '#1E293B',
     width: '100%',
   },
-  tableRowAlt: {
-    backgroundColor: '#090D1A',
-  },
   tableCell: {
-    color: '#E2E8F0',
     fontSize: 12,
     paddingHorizontal: 12,
     lineHeight: 18,
@@ -275,26 +289,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   tableCellHeader: {
-    color: '#94A3B8',
     fontWeight: '700',
     fontSize: 11,
     textTransform: 'uppercase',
   },
-  tableCellPrimary: {
-    color: '#38BDF8',
-    fontWeight: '700',
-  },
   notesBox: {
     flexDirection: 'row',
     gap: 10,
-    backgroundColor: 'rgba(56, 189, 248, 0.1)',
     borderRadius: 10,
     padding: 12,
     borderWidth: 1,
-    borderColor: 'rgba(56, 189, 248, 0.3)',
   },
   noteText: {
-    color: '#BAE6FD',
     fontSize: 12,
     lineHeight: 17,
   },
