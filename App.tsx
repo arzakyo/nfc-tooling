@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, SafeAreaView, StatusBar, Platform } from 'react-native';
+import { StyleSheet, View, Text, StatusBar, Platform } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { TabBar, TabId } from './src/components/TabBar';
 import { ScanScreen } from './src/screens/ScanScreen';
 import { PocketBookScreen } from './src/screens/PocketBookScreen';
@@ -24,41 +25,43 @@ export default function App() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
-      
-      <View style={styles.appShell}>
-        {/* Top Navigation Bar */}
-        <View style={styles.navBar}>
-          <View style={styles.brandRow}>
-            <View style={styles.logoIcon}>
-              <Ionicons name="hardware-chip" size={18} color="#38BDF8" />
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
+        
+        <View style={styles.appShell}>
+          {/* Top Navigation Bar */}
+          <View style={styles.navBar}>
+            <View style={styles.brandRow}>
+              <View style={styles.logoIcon}>
+                <Ionicons name="hardware-chip" size={18} color="#38BDF8" />
+              </View>
+              <Text style={styles.brandTitle}>NFC Tooling</Text>
             </View>
-            <Text style={styles.brandTitle}>NFC Tooling</Text>
+            <View style={styles.platformBadge}>
+              <Text style={styles.platformText}>
+                {Platform.OS === 'web' ? 'Web Mode' : `${Platform.OS.toUpperCase()} Native`}
+              </Text>
+            </View>
           </View>
-          <View style={styles.platformBadge}>
-            <Text style={styles.platformText}>
-              {Platform.OS === 'web' ? 'Web Mode' : `${Platform.OS.toUpperCase()} Native`}
-            </Text>
+
+          {/* Active Tab Screen */}
+          <View style={styles.screenContainer}>
+            {activeTab === 'scan' && <ScanScreen />}
+            {activeTab === 'pocketbook' && (
+              <PocketBookScreen initialSectionId={targetPocketBookSection} />
+            )}
+            {activeTab === 'faq' && (
+              <FaqScreen onOpenPocketBookSection={handleOpenPocketBookSection} />
+            )}
+            {activeTab === 'history' && <HistoryScreen />}
           </View>
-        </View>
 
-        {/* Active Tab Screen */}
-        <View style={styles.screenContainer}>
-          {activeTab === 'scan' && <ScanScreen />}
-          {activeTab === 'pocketbook' && (
-            <PocketBookScreen initialSectionId={targetPocketBookSection} />
-          )}
-          {activeTab === 'faq' && (
-            <FaqScreen onOpenPocketBookSection={handleOpenPocketBookSection} />
-          )}
-          {activeTab === 'history' && <HistoryScreen />}
+          {/* Bottom Navigation */}
+          <TabBar activeTab={activeTab} onSelectTab={handleSelectTab} />
         </View>
-
-        {/* Bottom Navigation */}
-        <TabBar activeTab={activeTab} onSelectTab={handleSelectTab} />
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
@@ -66,7 +69,6 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#0F172A',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   appShell: {
     flex: 1,

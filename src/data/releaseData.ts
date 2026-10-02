@@ -9,17 +9,15 @@ export interface ReleaseInfo {
 }
 
 export const CURRENT_RELEASE: ReleaseInfo = {
-  version: '1.0.1',
+  version: '1.0.2',
   releaseDate: 'October 2026',
   apkDownloadUrl: 'https://github.com/arzakyo/nfc-tooling/releases/latest/download/nfc-tooling.apk',
   githubReleasesUrl: 'https://github.com/arzakyo/nfc-tooling/releases',
   fileSize: '68.0 MB',
   targetPlatform: 'Android 8.0+ (ARM64 & x86_64)',
   changelog: [
-    'Seamless Android system bars: matched top/bottom navigation bar colors (#0F172A)',
-    'Safe area insets: added status bar padding and tab bar bottom spacing',
-    'Home screen scroll fix: release notes expand and scroll smoothly without clipping',
-    'Cloudflare Workers SPA configuration with wrangler.json assets deployment',
-    'Real APK size metadata calibrated to 68.0 MB'
+    'Dynamic bottom safe area insets via react-native-safe-area-context',
+    'Fixed navigation bar overlap with Android 3-button nav and gesture pills',
+    'Seamless status bar and navigation bar system colors'
   ]
 };

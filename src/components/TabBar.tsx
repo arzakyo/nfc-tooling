@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 export type TabId = 'scan' | 'pocketbook' | 'faq' | 'history';
@@ -10,6 +11,7 @@ interface TabBarProps {
 }
 
 export const TabBar: React.FC<TabBarProps> = ({ activeTab, onSelectTab }) => {
+  const insets = useSafeAreaInsets();
   const tabs: Array<{ id: TabId; label: string; icon: keyof typeof Ionicons.glyphMap }> = [
     { id: 'scan', label: 'Inspector', icon: 'scan-outline' },
     { id: 'pocketbook', label: 'Pocket Book', icon: 'book-outline' },
@@ -17,8 +19,11 @@ export const TabBar: React.FC<TabBarProps> = ({ activeTab, onSelectTab }) => {
     { id: 'history', label: 'History', icon: 'time-outline' },
   ];
 
+  // Dynamic bottom padding: uses system insets if present (gesture bar / 3-button nav), or safe default
+  const bottomPadding = Math.max(insets.bottom, Platform.OS === 'android' ? 16 : Platform.OS === 'ios' ? 20 : 12);
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: bottomPadding }]}>
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
         return (
@@ -50,7 +55,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#1E293B',
     paddingTop: 10,
-    paddingBottom: Platform.OS === 'ios' ? 24 : Platform.OS === 'android' ? 14 : 12,
     paddingHorizontal: 8,
     justifyContent: 'space-around',
   },

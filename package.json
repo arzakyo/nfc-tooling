@@ -1,6 +1,6 @@
 {
   "name": "nfc-tooling",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "index.ts",
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
@@ -13,6 +13,7 @@
     "react-dom": "19.2.3",
     "react-native": "0.86.3",
     "react-native-nfc-manager": "^3.17.2",
+    "react-native-safe-area-context": "~5.7.0",
     "react-native-web": "^0.21.2"
   },
   "devDependencies": {
