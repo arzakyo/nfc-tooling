@@ -1,28 +1,58 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, StatusBar, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, Text, StatusBar, Platform, BackHandler } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { TabBar, TabId } from './src/components/TabBar';
 import { ScanScreen } from './src/screens/ScanScreen';
-import { PocketBookScreen } from './src/screens/PocketBookScreen';
-import { FaqScreen } from './src/screens/FaqScreen';
 import { HistoryScreen } from './src/screens/HistoryScreen';
+import { MoreScreen } from './src/screens/MoreScreen';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>('scan');
-  const [targetPocketBookSection, setTargetPocketBookSection] = useState<string | undefined>(undefined);
 
-  const handleOpenPocketBookSection = (sectionId: string) => {
-    setTargetPocketBookSection(sectionId);
-    setActiveTab('pocketbook');
-  };
+  // Handle hardware back button and browser history for tabs
+  useEffect(() => {
+    // 1. Android hardware back press
+    if (Platform.OS !== 'web') {
+      const handleBack = () => {
+        if (activeTab !== 'scan') {
+          setActiveTab('scan');
+          return true; // handled, don't exit app
+        }
+        return false;
+      };
 
-  const handleSelectTab = (tab: TabId) => {
-    if (tab !== 'pocketbook') {
-      setTargetPocketBookSection(undefined);
+      const sub = BackHandler.addEventListener('hardwareBackPress', handleBack);
+      return () => sub.remove();
     }
-    setActiveTab(tab);
-  };
+
+    // 2. Browser back button for tabs
+    if (typeof window !== 'undefined') {
+      const currentTab = (window.history.state as any)?.tab;
+      if (currentTab !== activeTab) {
+        window.history.pushState({ tab: activeTab }, '', `#${activeTab}`);
+      }
+
+      const handlePopState = (event: PopStateEvent) => {
+        const targetTab = event.state?.tab as TabId | undefined;
+        if (targetTab && ['scan', 'history', 'more'].includes(targetTab)) {
+          setActiveTab(targetTab);
+        } else if (window.location.hash) {
+          const rawHash = window.location.hash.replace('#', '').split('/')[0] as TabId;
+          if (['scan', 'history', 'more'].includes(rawHash)) {
+            setActiveTab(rawHash);
+          } else {
+            setActiveTab('scan');
+          }
+        } else {
+          setActiveTab('scan');
+        }
+      };
+
+      window.addEventListener('popstate', handlePopState);
+      return () => window.removeEventListener('popstate', handlePopState);
+    }
+  }, [activeTab]);
 
   return (
     <SafeAreaProvider>
@@ -48,17 +78,12 @@ export default function App() {
           {/* Active Tab Screen */}
           <View style={styles.screenContainer}>
             {activeTab === 'scan' && <ScanScreen />}
-            {activeTab === 'pocketbook' && (
-              <PocketBookScreen initialSectionId={targetPocketBookSection} />
-            )}
-            {activeTab === 'faq' && (
-              <FaqScreen onOpenPocketBookSection={handleOpenPocketBookSection} />
-            )}
             {activeTab === 'history' && <HistoryScreen />}
+            {activeTab === 'more' && <MoreScreen />}
           </View>
 
           {/* Bottom Navigation */}
-          <TabBar activeTab={activeTab} onSelectTab={handleSelectTab} />
+          <TabBar activeTab={activeTab} onSelectTab={setActiveTab} />
         </View>
       </SafeAreaView>
     </SafeAreaProvider>

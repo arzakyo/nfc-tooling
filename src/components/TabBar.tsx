@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
-export type TabId = 'scan' | 'pocketbook' | 'faq' | 'history';
+export type TabId = 'scan' | 'history' | 'more';
 
 interface TabBarProps {
   activeTab: TabId;
@@ -14,9 +14,8 @@ export const TabBar: React.FC<TabBarProps> = ({ activeTab, onSelectTab }) => {
   const insets = useSafeAreaInsets();
   const tabs: Array<{ id: TabId; label: string; icon: keyof typeof Ionicons.glyphMap }> = [
     { id: 'scan', label: 'Inspector', icon: 'scan-outline' },
-    { id: 'pocketbook', label: 'Pocket Book', icon: 'book-outline' },
-    { id: 'faq', label: 'FAQ', icon: 'help-circle-outline' },
     { id: 'history', label: 'History', icon: 'time-outline' },
+    { id: 'more', label: 'More', icon: 'grid-outline' },
   ];
 
   // Dynamic bottom padding: uses system insets if present (gesture bar / 3-button nav), or safe default

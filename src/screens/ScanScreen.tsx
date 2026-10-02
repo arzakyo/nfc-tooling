@@ -6,6 +6,7 @@ import { ScannedCard } from '../services/nfc/nfcTypes';
 import { saveScanToHistory } from '../services/storageService';
 import { CardInspectorView } from '../components/CardInspectorView';
 import { DownloadAppBanner } from '../components/DownloadAppBanner';
+import { useBackHandler } from '../hooks/useBackHandler';
 
 export const ScanScreen: React.FC = () => {
   const [scanning, setScanning] = useState(false);
@@ -22,6 +23,19 @@ export const ScanScreen: React.FC = () => {
       nfcService.stopScan();
     };
   }, []);
+
+  // Universal back handler (dismiss card inspection or cancel scan)
+  useBackHandler({
+    enabled: Boolean(currentCard || scanning),
+    onBack: () => {
+      if (currentCard) {
+        setCurrentCard(null);
+      } else if (scanning) {
+        handleStopScan();
+      }
+    },
+    historyKey: 'scan-detail',
+  });
 
   const handleStartScan = async () => {
     setErrorMsg(null);

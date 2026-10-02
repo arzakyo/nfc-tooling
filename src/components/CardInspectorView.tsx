@@ -19,6 +19,9 @@ export const CardInspectorView: React.FC<CardInspectorViewProps> = ({ card }) =>
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.cardType}>{card.cardType}</Text>
+            {card.manufacturer && (
+              <Text style={styles.cardManufacturer}>{card.manufacturer}</Text>
+            )}
             <Text style={styles.scanDate}>Scanned: {new Date(card.scannedAt).toLocaleTimeString()}</Text>
           </View>
         </View>
@@ -70,10 +73,16 @@ export const CardInspectorView: React.FC<CardInspectorViewProps> = ({ card }) =>
           <Text style={styles.sectionTitle}>RF Parameters & Protocols</Text>
         </View>
         <View style={styles.paramGrid}>
+          {card.memorySize && (
+            <View style={styles.paramItem}>
+              <Text style={styles.paramLabel}>Memory Size</Text>
+              <Text style={[styles.paramVal, { color: '#38BDF8' }]}>{card.memorySize}</Text>
+            </View>
+          )}
           {card.sak !== undefined && (
             <View style={styles.paramItem}>
               <Text style={styles.paramLabel}>SAK</Text>
-              <Text style={styles.paramVal}>0x{card.sak.toString(16).toUpperCase()}</Text>
+              <Text style={styles.paramVal}>0x{card.sak.toString(16).toUpperCase().padStart(2, '0')}</Text>
             </View>
           )}
           {card.atqa && (
@@ -82,9 +91,19 @@ export const CardInspectorView: React.FC<CardInspectorViewProps> = ({ card }) =>
               <Text style={styles.paramVal}>{card.atqa}</Text>
             </View>
           )}
+          {card.ats && (
+            <View style={styles.paramItem}>
+              <Text style={styles.paramLabel}>ATS (Historical Bytes)</Text>
+              <Text style={styles.paramVal}>{card.ats}</Text>
+            </View>
+          )}
           <View style={styles.paramItem}>
-            <Text style={styles.paramLabel}>Protocols</Text>
-            <Text style={styles.paramVal}>{card.techList.join(', ')}</Text>
+            <Text style={styles.paramLabel}>Technologies</Text>
+            <Text style={styles.paramVal}>
+              {card.techList
+                .map(t => t.replace('android.nfc.tech.', ''))
+                .join(', ')}
+            </Text>
           </View>
         </View>
       </View>
@@ -155,6 +174,12 @@ const styles = StyleSheet.create({
     color: '#F8FAFC',
     fontSize: 18,
     fontWeight: '700',
+  },
+  cardManufacturer: {
+    color: '#38BDF8',
+    fontSize: 13,
+    fontWeight: '600',
+    marginTop: 1,
   },
   scanDate: {
     color: '#64748B',

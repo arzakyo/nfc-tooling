@@ -4,19 +4,60 @@ import { Ionicons } from '@expo/vector-icons';
 import { ScannedCard } from '../services/nfc/nfcTypes';
 import { getScanHistory, clearScanHistory } from '../services/storageService';
 import { CardInspectorView } from '../components/CardInspectorView';
+import { useBackHandler } from '../hooks/useBackHandler';
 
-export const HistoryScreen: React.FC = () => {
+interface HistoryScreenProps {
+  initialSelectedCardId?: string;
+}
+
+export const HistoryScreen: React.FC<HistoryScreenProps> = ({ initialSelectedCardId }) => {
   const [history, setHistory] = useState<ScannedCard[]>([]);
   const [selectedCard, setSelectedCard] = useState<ScannedCard | null>(null);
 
   const loadHistory = async () => {
     const list = await getScanHistory();
     setHistory(list);
+
+    if (initialSelectedCardId) {
+      const match = list.find((c) => c.id === initialSelectedCardId);
+      if (match) setSelectedCard(match);
+    }
   };
 
   useEffect(() => {
     loadHistory();
   }, []);
+
+  // Listen to hash / browser forward & back
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const checkHash = () => {
+      const hash = window.location.hash;
+      if (hash.startsWith('#history/')) {
+        const id = hash.replace('#history/', '');
+        const found = history.find((c) => c.id === id);
+        if (found) setSelectedCard(found);
+      } else if (hash === '#history') {
+        setSelectedCard(null);
+      }
+    };
+
+    window.addEventListener('popstate', checkHash);
+    return () => window.removeEventListener('popstate', checkHash);
+  }, [history]);
+
+  // Universal back handler (Android hardware back)
+  useBackHandler({
+    enabled: Boolean(selectedCard),
+    onBack: () => {
+      setSelectedCard(null);
+      if (typeof window !== 'undefined' && window.location.hash.startsWith('#history/')) {
+        window.history.pushState({ tab: 'history' }, '', '#history');
+      }
+    },
+    historyKey: 'history-detail',
+  });
 
   const handleClear = async () => {
     await clearScanHistory();
@@ -28,7 +69,16 @@ export const HistoryScreen: React.FC = () => {
     return (
       <View style={styles.container}>
         <View style={styles.topBar}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => setSelectedCard(null)}>
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={() => {
+              if (typeof window !== 'undefined' && window.location.hash.startsWith('#history/')) {
+                window.history.back();
+              } else {
+                setSelectedCard(null);
+              }
+            }}
+          >
             <Ionicons name="arrow-back" size={18} color="#38BDF8" />
             <Text style={styles.backBtnText}>Back to History</Text>
           </TouchableOpacity>
@@ -69,7 +119,12 @@ export const HistoryScreen: React.FC = () => {
           renderItem={({ item }) => (
             <TouchableOpacity
               style={styles.cardItem}
-              onPress={() => setSelectedCard(item)}
+              onPress={() => {
+                setSelectedCard(item);
+                if (typeof window !== 'undefined') {
+                  window.history.pushState({ tab: 'history', cardId: item.id }, '', `#history/${item.id}`);
+                }
+              }}
               activeOpacity={0.7}
             >
               <View style={styles.cardIcon}>

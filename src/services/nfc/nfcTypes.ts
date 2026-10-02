@@ -37,6 +37,8 @@ export interface ScannedCard {
   sak?: number;
   atqa?: string;
   ats?: string;
+  manufacturer?: string;
+  memorySize?: string;
   ndefRecords?: ParsedNdefRecord[];
   emoney?: EmoneyDetail;
   scannedAt: string; // ISO string
