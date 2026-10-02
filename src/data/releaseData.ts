@@ -9,18 +9,17 @@ export interface ReleaseInfo {
 }
 
 export const CURRENT_RELEASE: ReleaseInfo = {
-  version: '1.0.0',
+  version: '1.0.1',
   releaseDate: 'October 2026',
   apkDownloadUrl: 'https://github.com/arzakyo/nfc-tooling/releases/latest/download/nfc-tooling.apk',
   githubReleasesUrl: 'https://github.com/arzakyo/nfc-tooling/releases',
   fileSize: '68.0 MB',
   targetPlatform: 'Android 8.0+ (ARM64 & x86_64)',
   changelog: [
-    'Initial Android & Web Hybrid release',
-    'Deep card inspection: UID, Random UID (08:) detection, SAK, ATQA, ATS',
-    'Smart Card Reader (APDU): Probes Mandiri e-Money & BCA Flazz balance and 16-digit PAN',
-    'NDEF Parser: Decodes Text, URI, and JSON payloads with raw hex view',
-    'Embedded interactive Pocket Book & FAQ handbook with cross-linking',
-    'Local offline scan history with AsyncStorage persistence'
+    'Seamless Android system bars: matched top/bottom navigation bar colors (#0F172A)',
+    'Safe area insets: added status bar padding and tab bar bottom spacing',
+    'Home screen scroll fix: release notes expand and scroll smoothly without clipping',
+    'Cloudflare Workers SPA configuration with wrangler.json assets deployment',
+    'Real APK size metadata calibrated to 68.0 MB'
   ]
 };
