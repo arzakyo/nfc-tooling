@@ -348,7 +348,7 @@ function getAndroidStudioPath(): string | null {
 
   // 7. Publish to GitHub Releases
   console.log(`[5/5] Publishing ${tag} to GitHub Releases...`);
-  const releaseSuccess = runCmd('gh', [
+  let releaseSuccess = runCmd('gh', [
     'release',
     'create',
     tag,
@@ -357,6 +357,17 @@ function getAndroidStudioPath(): string | null {
     `"Release ${tag}"`,
     '--generate-notes',
   ]);
+
+  if (!releaseSuccess) {
+    console.log(`\n\x1b[33mRelease tag ${tag} already exists on GitHub. Overwriting release APK asset (--clobber)...\x1b[0m`);
+    releaseSuccess = runCmd('gh', [
+      'release',
+      'upload',
+      tag,
+      targetApk,
+      '--clobber',
+    ]);
+  }
 
   if (releaseSuccess) {
     console.log('\n\x1b[32m%s\x1b[0m', `🎉 SUCCESS! Release ${tag} is live on GitHub.`);
