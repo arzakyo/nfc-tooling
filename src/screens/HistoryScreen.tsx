@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ScannedCard } from '../services/nfc/nfcTypes';
 import { getScanHistory, clearScanHistory } from '../services/storageService';
@@ -33,12 +33,12 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ initialSelectedCar
     loadHistory();
   }, []);
 
-  // Listen to hash / browser forward & back
+  // Listen to hash / browser forward & back (Web only)
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
 
     const checkHash = () => {
-      const hash = window.location.hash;
+      const hash = window.location?.hash || '';
       if (hash.startsWith('#history/')) {
         const id = hash.replace('#history/', '');
         const found = history.find((c) => c.id === id);
@@ -57,7 +57,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ initialSelectedCar
     enabled: Boolean(selectedCard),
     onBack: () => {
       setSelectedCard(null);
-      if (typeof window !== 'undefined' && window.location.hash.startsWith('#history/')) {
+      if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location?.hash?.startsWith('#history/')) {
         window.history.pushState({ tab: 'history' }, '', '#history');
       }
     },
@@ -71,7 +71,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ initialSelectedCar
       setSelectedCard(null);
     };
 
-    if (typeof window !== 'undefined' && window.confirm) {
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.confirm) {
       if (window.confirm(t.history.clearConfirmMessage)) {
         await performClear();
       }
@@ -94,7 +94,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ initialSelectedCar
           <TouchableOpacity
             style={styles.backBtn}
             onPress={() => {
-              if (typeof window !== 'undefined' && window.location.hash.startsWith('#history/')) {
+              if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location?.hash?.startsWith('#history/')) {
                 window.history.back();
               } else {
                 setSelectedCard(null);
@@ -151,7 +151,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ initialSelectedCar
               ]}
               onPress={() => {
                 setSelectedCard(item);
-                if (typeof window !== 'undefined') {
+                if (Platform.OS === 'web' && typeof window !== 'undefined') {
                   window.history.pushState({ tab: 'history', cardId: item.id }, '', `#history/${item.id}`);
                 }
               }}

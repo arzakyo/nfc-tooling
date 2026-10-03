@@ -283,11 +283,21 @@ function getAndroidStudioPath(): string | null {
     fs.writeFileSync(localProp, `sdk.dir=${escaped}\n`);
   }
 
-  // 5. Setup Keystore if missing
+  // 5. Setup Keystore (using persistent keystore)
   const androidAppDir = path.join(process.cwd(), 'android', 'app');
   const keystorePath = path.join(androidAppDir, 'release.keystore');
-  if (!fs.existsSync(keystorePath)) {
-    console.log('Generating local release keystore...');
+  const persistentCredsDir = path.join(process.cwd(), 'credentials');
+  const persistentKeystorePath = path.join(persistentCredsDir, 'release.keystore');
+
+  if (!fs.existsSync(persistentCredsDir)) {
+    fs.mkdirSync(persistentCredsDir, { recursive: true });
+  }
+
+  if (fs.existsSync(persistentKeystorePath)) {
+    console.log('Using persistent release keystore from ./credentials/release.keystore...');
+    fs.copyFileSync(persistentKeystorePath, keystorePath);
+  } else {
+    console.log('Generating persistent release keystore...');
     runCmd(
       'keytool',
       [
@@ -312,8 +322,11 @@ function getAndroidStudioPath(): string | null {
         '-dname',
         '"CN=NFCTooling, OU=Mobile, O=NFCTooling, L=Jakarta, C=ID"',
       ],
-      androidAppDir
+      persistentCredsDir
     );
+    if (fs.existsSync(persistentKeystorePath)) {
+      fs.copyFileSync(persistentKeystorePath, keystorePath);
+    }
   }
 
   // 6. Compile Release APK

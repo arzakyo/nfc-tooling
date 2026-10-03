@@ -9,10 +9,12 @@ dist/
 web-build/
 expo-env.d.ts
 
-# Native
+# Native & Signing
 .kotlin/
 *.orig.*
 *.jks
+*.keystore
+credentials/
 *.p8
 *.p12
 *.key

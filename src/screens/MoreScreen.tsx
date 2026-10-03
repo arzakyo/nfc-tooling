@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { PocketBookScreen } from './PocketBookScreen';
 import { FaqScreen } from './FaqScreen';
@@ -33,12 +33,12 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({
   const { colors, preference, setPreference } = useTheme();
   const { language, setLanguage, t } = useI18n();
 
-  // Sync with browser hash on initial load and forward/back navigation
+  // Sync with browser hash on initial load and forward/back navigation (Web only)
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
 
     const syncWithHash = () => {
-      const hash = window.location.hash;
+      const hash = window.location?.hash || '';
       if (hash.startsWith('#more/pocketbook')) {
         setCurrentSubView('pocketbook');
       } else if (hash.startsWith('#more/faq')) {
@@ -67,7 +67,7 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({
         return;
       }
       setCurrentSubView('menu');
-      if (typeof window !== 'undefined' && window.location.hash.startsWith('#more/')) {
+      if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location?.hash?.startsWith('#more/')) {
         window.history.pushState({ tab: 'more' }, '', '#more');
       }
     },
@@ -77,27 +77,27 @@ export const MoreScreen: React.FC<MoreScreenProps> = ({
   const handleOpenPocketBook = (sectionId?: string) => {
     setTargetPocketBookSection(sectionId);
     setCurrentSubView('pocketbook');
-    if (typeof window !== 'undefined') {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
       window.history.pushState({ tab: 'more', sub: 'pocketbook' }, '', '#more/pocketbook');
     }
   };
 
   const handleOpenFaq = () => {
     setCurrentSubView('faq');
-    if (typeof window !== 'undefined') {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
       window.history.pushState({ tab: 'more', sub: 'faq' }, '', '#more/faq');
     }
   };
 
   const handleOpenAbout = () => {
     setCurrentSubView('about');
-    if (typeof window !== 'undefined') {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
       window.history.pushState({ tab: 'more', sub: 'about' }, '', '#more/about');
     }
   };
 
   const handleBackToMenu = () => {
-    if (typeof window !== 'undefined' && window.location.hash.startsWith('#more/')) {
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location?.hash?.startsWith('#more/')) {
       window.history.back();
     } else {
       setCurrentSubView('menu');
