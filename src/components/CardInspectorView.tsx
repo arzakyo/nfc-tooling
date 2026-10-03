@@ -110,13 +110,27 @@ export const CardInspectorView: React.FC<CardInspectorViewProps> = ({ card }) =>
               <Text style={[styles.paramVal, { color: colors.textPrimary }]}>{card.ats}</Text>
             </View>
           )}
-          <View style={styles.paramItem}>
+          <View style={styles.paramColumnItem}>
             <Text style={[styles.paramLabel, { color: colors.textSecondary }]}>{t.inspector.rfTechnology}</Text>
-            <Text style={[styles.paramVal, { color: colors.textPrimary }]}>
-              {card.techList
-                .map(item => item.replace('android.nfc.tech.', ''))
-                .join(', ')}
-            </Text>
+            <View style={styles.tagBadgeContainer}>
+              {card.techList.map((item, idx) => {
+                const cleanName = item.replace('android.nfc.tech.', '');
+                return (
+                  <View
+                    key={idx}
+                    style={[
+                      styles.techTagBadge,
+                      {
+                        backgroundColor: colors.surfaceBg,
+                        borderColor: colors.borderColor,
+                      },
+                    ]}
+                  >
+                    <Text style={[styles.techTagText, { color: colors.primary }]}>{cleanName}</Text>
+                  </View>
+                );
+              })}
+            </View>
           </View>
         </View>
       </View>
@@ -282,6 +296,12 @@ const styles = StyleSheet.create({
   paramItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  paramColumnItem: {
+    flexDirection: 'column',
+    gap: 6,
+    marginTop: 2,
   },
   paramLabel: {
     fontSize: 13,
@@ -289,6 +309,25 @@ const styles = StyleSheet.create({
   paramVal: {
     fontWeight: '600',
     fontSize: 13,
+    flexShrink: 1,
+    textAlign: 'right',
+  },
+  tagBadgeContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 2,
+  },
+  techTagBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  techTagText: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
   emptyNdef: {
     borderRadius: 10,
